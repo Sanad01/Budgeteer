@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtCore import pyqtSignal, QObject, Qt, QPropertyAnimation, QRect
 from PyQt5.QtSql import QSqlQuery
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QInputDialog, QMessageBox, QListWidget
+from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QInputDialog, QMessageBox, \
+    QListWidget, QSpacerItem, QSizePolicy
 from PyQt5.QtGui import QPixmap, QIcon
 
 from app.GUI.fonts import title_font, text_font, list_widget_style, button_style1a, button_style3
@@ -102,9 +103,14 @@ class StartScreen(QWidget):
         row1 = QHBoxLayout()
         row2 = QHBoxLayout()
 
-        intro_text = QLabel("BUDGETEER    ", self)
+        left_spacer = QSpacerItem(10, 21, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        right_spacer = QSpacerItem(650, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        intro_text = QLabel("BUDGETEER", self)
         title_font(intro_text)
+        row1.addItem(left_spacer)
         row1.addWidget(intro_text)
+        row1.addItem(right_spacer)
         col2.addLayout(row1)
 
         # set the Qlist position to be next to load button
