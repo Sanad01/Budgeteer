@@ -135,5 +135,11 @@ class DatabaseManager:
             # return a list of plan names and a dict that contains names and income values
         return names, self.plan_dict
 
+    def close_connection(self):
+        if self.db.isOpen():
+            self.db.close()
+            QSqlDatabase.removeDatabase(QSqlDatabase.defaultConnection)
+            print("Database connection closed.")
+
 
 
