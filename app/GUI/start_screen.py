@@ -71,8 +71,8 @@ class StartScreen(QWidget):
         self.start_button.clicked.connect(self.list_cancel)
         self.start_button.clicked.connect(self.show_input_dialog)  # closes load plan list if open
         self.hover_filter2 = HoverFilter()
-        self.start_button.installEventFilter(self.hover_filter2)
-        self.hover_filter2.HoverEnter.connect(lambda: self.expand_button_animation(self.start_button))
+        # self.start_button.installEventFilter(self.hover_filter2)
+        # self.hover_filter2.HoverEnter.connect(lambda: self.expand_button_animation(self.start_button))
 
         row1.addWidget(self.start_button)
         row1.addStretch(1)
