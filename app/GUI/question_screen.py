@@ -36,9 +36,9 @@ class QuestionScreen(QWidget):
             "What is your monthly income after taxes? (avg if wages)",
             "How much do you pay for rent?",
             "How much do you pay for utilities? (electric, gas, etc...)",
-            "How much do you spend on bills? (internet, phone bill, subscription)",
+            "How much do you spend on bills? (internet, phone bill, subs",
             "How much do you spend on transportation? (gas, bus fare, etc...)",
-            "How much do you spend on recurring payments? (loans, debt, insurance, child support, etc...)",
+            "How much do you spend on recurring payments? (debt, insurance, etc...)",
         ]
         # widget and row setup
         row1 = QHBoxLayout()
