@@ -40,22 +40,6 @@ class StartScreen(QWidget):
         main_layout.addLayout(col2)
         main_layout.addLayout(col3)
 
-        test_button = QPushButton("TEST")
-
-        self.hover_filter = HoverFilter()
-        test_button.installEventFilter(self.hover_filter)
-        self.hover_filter.HoverEnter.connect(lambda: self.expand_button_animation(test_button))
-
-        button_width = test_button.sizeHint().width()
-        button_height = test_button.sizeHint().height()
-        center_x = (self.width() - button_width) // 2
-        center_y = (self.height() - button_height) // 2
-
-        # Set the button position to the center of the window
-        test_button.setGeometry(center_x, center_y, button_width, button_height)
-        test_button.show()
-
-
         self.setLayout(main_layout)
 
     def create_col1(self):
