@@ -33,6 +33,7 @@ class QuestionScreen(QWidget):
         self.master_layout = QVBoxLayout()
 
         self.questions = [
+            "What is your monthly income after taxes? (avg if wages)",
             "How much do you pay for rent?",
             "How much do you pay for utilities? (electric, gas, etc...)",
             "How much do you spend on bills? (internet, phone bill, subs)",
