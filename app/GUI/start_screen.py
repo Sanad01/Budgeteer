@@ -223,7 +223,7 @@ class StartScreen(QWidget):
         if plan_name:
             if plan_dict[plan_name]:
                 print(f'income is not 0, it is {plan_dict[plan_name]}')
-                self.screen_manager.go_to_analysis()
+                self.screen_manager.go_to_home_screen()
             else:
                 print("income is zero")
                 self.screen_manager.go_to_questions()
