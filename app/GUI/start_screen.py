@@ -20,26 +20,23 @@ class StartScreen(QWidget):
         self.db = DatabaseManager()
         self.screen_manager = screen_manager
         self.name = None
-        self.create_list()
         self.init_ui()
 
         # self.music_player = play_music()
         # self.music_player.play()
 
     def init_ui(self):
-        self.resize(1920, 1080)
         self.setWindowTitle("Financial Planner")
 
         main_layout = QHBoxLayout()
 
         col1 = self.create_col1()
-        col2 = self.create_col2()
-        col3 = self.create_col3()
+        self.create_col2()
+        #col3 = self.create_col3()
 
         # Add columns to the main layout
         main_layout.addLayout(col1)
-        main_layout.addLayout(col2)
-        main_layout.addLayout(col3)
+        #main_layout.addLayout(col3)
 
         self.setLayout(main_layout)
 
@@ -64,6 +61,7 @@ class StartScreen(QWidget):
 
         # load plan button
         self.load_plan_button = QPushButton("-  Load Plan")
+        self.create_list()
         print(self.plan_name_list)
         if self.plan_name_list:
             self.load_plan_button.clicked.connect(self.show_list)
@@ -86,7 +84,8 @@ class StartScreen(QWidget):
         buttons = [self.start_button, self.load_plan_button, settings_button, exit_button]
         for button in buttons:
             button_style1(button)
-            button.setFixedWidth(self.start_button.sizeHint().width() + 50)
+            button_style1(button)
+            button.setFixedWidth(self.start_button.sizeHint().width() + 60)
             text_font(button)
 
         col1.addStretch(1)
@@ -99,33 +98,12 @@ class StartScreen(QWidget):
         return col1
 
     def create_col2(self):
-        col2 = QVBoxLayout()
-        row1 = QHBoxLayout()
-        row2 = QHBoxLayout()
-
-        left_spacer = QSpacerItem(10, 21, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        right_spacer = QSpacerItem(650, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
         intro_text = QLabel("BUDGETEER", self)
         title_font(intro_text)
-        row1.addItem(left_spacer)
-        row1.addWidget(intro_text)
-        row1.addItem(right_spacer)
-        col2.addLayout(row1)
-
-        # set the Qlist position to be next to load button
-        button_pos = self.get_button_pos(self.load_plan_button)
-        self.plan_name_list.move(button_pos.x() + 600, button_pos.y() - 100 + self.load_plan_button.height())
-
-        # move select, cancel buttons relative to the pos of the Qlist
-        list_pos = self.plan_name_list.pos()
-        self.select_button.move(int(list_pos.x() + self.plan_name_list.width() / 2) - 2,
-                                list_pos.y() + self.plan_name_list.height() - 9)
-        self.cancel_button.move(int(list_pos.x()) + 2, list_pos.y() + self.plan_name_list.height() - 9)
-
-        col2.addStretch(1)
-
-        return col2
+        x = ((self.screen_manager.screen_size[0] - intro_text.sizeHint().width()) // 2)
+        y = 30  # arbitrary vertical offset
+        intro_text.move(x, y)
+        intro_text.show()
 
     def create_col3(self):
         col3 = QVBoxLayout()
@@ -142,6 +120,18 @@ class StartScreen(QWidget):
         col3.addLayout(row2)
 
         return col3
+
+    def create_load_list(self):
+        # set the Qlist position to be next to load button
+        button_pos = self.get_button_pos(self.load_plan_button)
+        self.plan_name_list.move(button_pos.x() + 600, button_pos.y() - 100 + self.load_plan_button.height())
+
+        # move select, cancel buttons relative to the pos of the Qlist
+        list_pos = self.plan_name_list.pos()
+        self.select_button.move(int(list_pos.x() + self.plan_name_list.width() / 2) - 2,
+                                list_pos.y() + self.plan_name_list.height() - 9)
+        self.cancel_button.move(int(list_pos.x()) + 2, list_pos.y() + self.plan_name_list.height() - 9)
+
 
     # create an input dialog when the user presses start new plan
     def show_input_dialog(self):
@@ -164,6 +154,7 @@ class StartScreen(QWidget):
 
 
     def create_list(self):
+
         self.plan_name_list = QListWidget(self)
 
         list_widget_style(self.plan_name_list)
@@ -179,6 +170,16 @@ class StartScreen(QWidget):
 
         self.plan_name_list.setSelectionMode(QListWidget.SingleSelection)
         self.plan_name_list.setVisible(False)
+
+        # set the Qlist position to be next to load button
+        button_pos = self.get_button_pos(self.load_plan_button)
+        self.plan_name_list.move(button_pos.x() + 600, button_pos.y() - 100 + self.load_plan_button.height())
+
+        # move select, cancel buttons relative to the pos of the Qlist
+        list_pos = self.plan_name_list.pos()
+        self.select_button.move(int(list_pos.x() + self.plan_name_list.width() / 2) - 2,
+                                list_pos.y() + self.plan_name_list.height() - 9)
+        self.cancel_button.move(int(list_pos.x()) + 2, list_pos.y() + self.plan_name_list.height() - 9)
 
     def show_list(self):
         self.plan_name_list.setVisible(True)
@@ -240,3 +241,5 @@ class StartScreen(QWidget):
         animation.setStartValue(button.size().width())
         animation.setEndValue(button.size().width()+20)
         animation.start()
+
+

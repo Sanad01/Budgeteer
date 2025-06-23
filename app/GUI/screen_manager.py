@@ -18,6 +18,7 @@ from app.GUI.question_screen import QuestionScreen
 class ScreenManager(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.screen_size = (1980,1080)
         self.move(800, 200)
         self.app = QApplication(sys.argv)
         self.setStyleSheet("background-color: #D8CAB8;")
@@ -35,8 +36,8 @@ class ScreenManager(QMainWindow):
         self.widget.addWidget(self.question_screen)
 
         self.setCentralWidget(self.widget)
-        self.widget.setFixedHeight(1080)
-        self.widget.setFixedWidth(1920)
+        self.widget.setFixedHeight(self.screen_size[1])
+        self.widget.setFixedWidth(self.screen_size[0])
 
         # signals for screen transitions
         self.start_screen.goToIncome.connect(self.go_to_income_screen)
