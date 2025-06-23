@@ -27,8 +27,7 @@ class HomeScreen(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        main_layout = QVBoxLayout(self)
-        main_layout.addSpacing(int(self.screen_manager.height()/13))
+        main_layout = QHBoxLayout(self)
         outer_frame = QFrame(self)
         outer_frame.setFrameShape(QFrame.Panel)  # Set the frame shape to Box (border around the frame)
         outer_frame.setStyleSheet("background-color: #A1662F;")
@@ -45,13 +44,13 @@ class HomeScreen(QWidget):
         outer_frame.setLayout(calendar_frame_layout)
 
         row1 = QHBoxLayout(self)
-        row1.addSpacing(int(self.screen_manager.width()/3))  # Add stretchable space
+        #row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
         row1.addWidget(outer_frame)
-        row1.addSpacing(int(self.screen_manager.width()/3))  # Add stretchable space
+        #row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
 
         # second row
         row2 = QHBoxLayout(self)
-        row2.addSpacing(int(self.screen_manager.width()/3))
+        #row2.addSpacing(int(self.screen_manager.width()/3))
         self.dropdown = QComboBox(self)
         self.dropdown.addItems(["Food", "Groceries", "shopping", "other"])
         combobox_style(self.dropdown)
@@ -71,11 +70,11 @@ class HomeScreen(QWidget):
         row2.addWidget(self.dropdown)
         row2.addWidget(self.amount)
         row2.addWidget(self.description)
-        row2.addSpacing(int(self.screen_manager.width()/3))
+        #row2.addSpacing(int(self.screen_manager.width()/3))
 
         # third row
         row3 = QHBoxLayout(self)
-        row3.addSpacing(int(self.screen_manager.width()/3))
+        #row3.addSpacing(int(self.screen_manager.width()/3))
 
         self.add_button = QPushButton("Add Expense", self)
         self.add_button.clicked.connect(self.insert_json_info)
@@ -86,11 +85,11 @@ class HomeScreen(QWidget):
 
         row3.addWidget(self.add_button)
         row3.addWidget(self.delete_button)
-        row3.addSpacing(int(self.screen_manager.width()/3))
+        #row3.addSpacing(int(self.screen_manager.width()/3))
 
         # fourth row
         row4 = QHBoxLayout(self)
-        row4.addSpacing(int(self.screen_manager.width()/3))
+        #row4.addSpacing(int(self.screen_manager.width()/3))
 
         table_columns = 3
         table_rows = 10
@@ -110,13 +109,18 @@ class HomeScreen(QWidget):
             self.tables.append(table)
             row4.addWidget(table)
 
-        row4.addSpacing(int(self.screen_manager.width()/3))
+        #row4.addSpacing(int(self.screen_manager.width()/3))
 
-        main_layout.addLayout(row1)
-        main_layout.addSpacing(50)
-        main_layout.addLayout(row2)
-        main_layout.addLayout(row3)
-        main_layout.addLayout(row4)
+        col1 = QVBoxLayout(self)
+        col1.addLayout(row1)
+        col1.addSpacing(30)
+        col1.addLayout(row2)
+        col1.addLayout(row3)
+        col1.addLayout(row4)
+
+        main_layout.addStretch()
+        main_layout.addLayout(col1)
+
         self.setLayout(main_layout)
 
     def on_frame_click(self, frame):
