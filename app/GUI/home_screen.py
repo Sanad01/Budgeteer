@@ -4,7 +4,7 @@ import os.path
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QTableWidget, \
-    QDateEdit, QComboBox, QLineEdit, QTableWidgetItem
+    QDateEdit, QComboBox, QLineEdit, QTableWidgetItem, QSizePolicy
 from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtGui import QFont, QIntValidator
 import calendar
@@ -31,6 +31,8 @@ class HomeScreen(QWidget):
         outer_frame = QFrame(self)
         outer_frame.setFrameShape(QFrame.Panel)  # Set the frame shape to Box (border around the frame)
         outer_frame.setStyleSheet("background-color: #A1662F;")
+        outer_frame.setMinimumSize(self.screen_manager.screen_size[0] // 2 , self.screen_manager.screen_size[1] // 2)
+        outer_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         inner_frame = QFrame(outer_frame)
         inner_frame.setFrameShape(QFrame.Panel)  # Set the frame shape to Box (border around the frame)
@@ -44,13 +46,13 @@ class HomeScreen(QWidget):
         outer_frame.setLayout(calendar_frame_layout)
 
         row1 = QHBoxLayout(self)
-        #row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
+        row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
         row1.addWidget(outer_frame)
         #row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
 
         # second row
         row2 = QHBoxLayout(self)
-        #row2.addSpacing(int(self.screen_manager.width()/3))
+        row2.addSpacing(int(self.screen_manager.width()/3))
         self.dropdown = QComboBox(self)
         self.dropdown.addItems(["Food", "Groceries", "shopping", "other"])
         combobox_style(self.dropdown)
@@ -74,7 +76,7 @@ class HomeScreen(QWidget):
 
         # third row
         row3 = QHBoxLayout(self)
-        #row3.addSpacing(int(self.screen_manager.width()/3))
+        row3.addSpacing(int(self.screen_manager.width()/3))
 
         self.add_button = QPushButton("Add Expense", self)
         self.add_button.clicked.connect(self.insert_json_info)
@@ -89,7 +91,7 @@ class HomeScreen(QWidget):
 
         # fourth row
         row4 = QHBoxLayout(self)
-        #row4.addSpacing(int(self.screen_manager.width()/3))
+        row4.addSpacing(int(self.screen_manager.width()/3))
 
         table_columns = 3
         table_rows = 10
