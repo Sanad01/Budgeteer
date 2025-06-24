@@ -31,7 +31,7 @@ class HomeScreen(QWidget):
         outer_frame = QFrame(self)
         outer_frame.setFrameShape(QFrame.Panel)  # Set the frame shape to Box (border around the frame)
         outer_frame.setStyleSheet("background-color: #A1662F;")
-        outer_frame.setMinimumSize(self.screen_manager.screen_size[0] // 2 , self.screen_manager.screen_size[1] // 2)
+        outer_frame.setMinimumSize(self.screen_manager.screen_size[0] // 3 , self.screen_manager.screen_size[1] // 3)
         outer_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         inner_frame = QFrame(outer_frame)
@@ -46,18 +46,20 @@ class HomeScreen(QWidget):
         outer_frame.setLayout(calendar_frame_layout)
 
         row1 = QHBoxLayout(self)
-        row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
-        row1.addWidget(outer_frame)
+        row1.addStretch()
+        #row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
+        row1.addWidget(outer_frame, alignment=Qt.AlignRight)
         #row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
 
         # second row
         row2 = QHBoxLayout(self)
-        row2.addSpacing(int(self.screen_manager.width()/3))
+        row2.addStretch()
         self.dropdown = QComboBox(self)
         self.dropdown.addItems(["Food", "Groceries", "shopping", "other"])
         combobox_style(self.dropdown)
 
         self.amount = QLineEdit(self)
+        self.amount.setMinimumWidth(self.screen_manager.screen_size[0] // 4)
         self.amount.setPlaceholderText("Enter amount here")
         text_box_style1(self.amount)
         int_validator = QIntValidator(0, 999999999)
@@ -66,17 +68,19 @@ class HomeScreen(QWidget):
                                        self.screen_manager.add_comma(text_box, text))
 
         self.description = QLineEdit(self)
+        self.description.setMinimumWidth(self.screen_manager.screen_size[0] // 4)
         self.description.setPlaceholderText("Enter description here")
         text_box_style1(self.description)
 
-        row2.addWidget(self.dropdown)
-        row2.addWidget(self.amount)
-        row2.addWidget(self.description)
+        row2.addWidget(self.dropdown, alignment=Qt.AlignRight)
+        row2.addWidget(self.amount, alignment=Qt.AlignRight)
+        row2.addWidget(self.description, alignment=Qt.AlignRight)
         #row2.addSpacing(int(self.screen_manager.width()/3))
 
         # third row
         row3 = QHBoxLayout(self)
-        row3.addSpacing(int(self.screen_manager.width()/3))
+        row3.addStretch()
+        row3.addSpacing(int(self.screen_manager.screen_size[0]//5 - 15))
 
         self.add_button = QPushButton("Add Expense", self)
         self.add_button.clicked.connect(self.insert_json_info)
@@ -91,11 +95,12 @@ class HomeScreen(QWidget):
 
         # fourth row
         row4 = QHBoxLayout(self)
-        row4.addSpacing(int(self.screen_manager.width()/3))
+
+        row4.addSpacing(int(self.screen_manager.screen_size[0]//5 - 15))
 
         table_columns = 3
         table_rows = 10
-        for i in range(32):
+        for i in range(31):
             table = QTableWidget(table_rows, table_columns, self)
             table.setHorizontalHeaderLabels(["Category", "Amount", "Description"])
             table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -109,7 +114,7 @@ class HomeScreen(QWidget):
                 self.restore_table_info(table, str(i))  # restore db data as soon as home_screen is open
                 table.show()
             self.tables.append(table)
-            row4.addWidget(table)
+            row4.addWidget(table, alignment=Qt.AlignRight)
 
         #row4.addSpacing(int(self.screen_manager.width()/3))
 
@@ -192,7 +197,8 @@ class HomeScreen(QWidget):
 
         header_height = table.horizontalHeader().height()
         total_height = row_height + header_height
-        table.setFixedHeight(total_height)
+        table.setMaximumHeight(total_height)
+        table.setMinimumWidth(self.screen_manager.screen_size[0] // 3)
 
     def create_day_labels(self):
         # font for day labels

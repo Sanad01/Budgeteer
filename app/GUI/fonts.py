@@ -272,8 +272,7 @@ def text_box_style1(text_box: QLineEdit):
                 border: 1px solid black;  
                 border-radius: 5px;  
                 padding: 5px;        
-                min-height: 20px;            
-                min-width: 30px;            
+                min-height: 20px;                      
                 font-size: 15px;
             }
         """)
