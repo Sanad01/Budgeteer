@@ -1,8 +1,8 @@
 import sys
-from PyQt5.QtCore import pyqtSignal, QObject, Qt, QPropertyAnimation, QRect
+from PyQt5.QtCore import pyqtSignal, QObject, Qt, QPropertyAnimation, QRect, QTimer
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QInputDialog, QMessageBox, \
-    QListWidget, QSpacerItem, QSizePolicy
+    QListWidget, QSpacerItem, QSizePolicy, QApplication
 from PyQt5.QtGui import QPixmap, QIcon, QFont
 
 from app.GUI.fonts import title_font, text_font, list_widget_style, button_style1a, button_style3
@@ -168,18 +168,17 @@ class StartScreen(QWidget):
 
 
     def create_list(self):
-
-        x = self.screen_manager.screen_size[0] * 0.3125
-        y = self.load_plan_button.mapToGlobal(self.load_plan_button.rect().topLeft()).y()
-        print(y)
         self.plan_name_list = QListWidget(self)
 
         list_widget_style(self.plan_name_list)
         self.plan_name_list.setFixedWidth(400)
         self.plan_name_list.setFixedHeight(500)
-        self.plan_name_list.setFont(text_font(self.plan_name_list.items))
+        self.plan_name_list.setFont(text_font(self.plan_name_list.items))  # ← fix this line too if needed
         self.create_list_buttons()
         self.plan_name_list.hide()
+
+        # Delay the position logic until after layout is complete
+        QTimer.singleShot(0, self.position_list)
 
         # unpack list of plan names and a dict that contains plan names and income values
         name_list, _ = self.db.fetch_plan()
@@ -189,8 +188,15 @@ class StartScreen(QWidget):
         self.plan_name_list.setVisible(False)
 
         # set the Qlist position to be next to load button
+
+    def position_list(self):
+
+        x = self.screen_manager.screen_size[0] * 0.3125
+
         button_pos = self.get_button_pos(self.load_plan_button)
-        self.plan_name_list.move(button_pos.x() + int(x), y)
+        print("Button global position:", button_pos)
+        print(button_pos.x())
+        self.plan_name_list.move(button_pos.x() + int(x), button_pos.y())
 
         # move select, cancel buttons relative to the pos of the Qlist
         list_pos = self.plan_name_list.pos()

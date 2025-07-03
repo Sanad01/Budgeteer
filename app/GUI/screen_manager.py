@@ -18,7 +18,7 @@ from app.GUI.question_screen import QuestionScreen
 class ScreenManager(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.screen_size = (1080,720)
+        self.screen_size = (1980,1080)
         self.move(800, 200)
         self.app = QApplication(sys.argv)
         self.setStyleSheet("background-color: #D8CAB8;")
