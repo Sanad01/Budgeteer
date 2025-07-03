@@ -172,8 +172,12 @@ class StartScreen(QWidget):
 
         list_widget_style(self.plan_name_list)
         self.plan_name_list.setMinimumWidth(self.screen_manager.screen_size[0] // 5)
-        self.plan_name_list.setFixedHeight(self.screen_manager.screen_size[0] // 5)
-        self.plan_name_list.setFont(text_font(self.plan_name_list.items))  # ← fix this line too if needed
+        self.plan_name_list.setMinimumHeight(self.screen_manager.screen_size[0] // 5)
+
+        relative_font_size = max(10, self.screen_manager.screen_size[1] // 45)
+        font = QFont()
+        font.setPointSize(relative_font_size)
+        self.plan_name_list.setFont(font)
         self.create_list_buttons()
         self.plan_name_list.hide()
 
@@ -191,7 +195,7 @@ class StartScreen(QWidget):
 
     def position_list(self):
 
-        x = self.screen_manager.screen_size[0] * 0.3125
+        x = self.screen_manager.screen_size[0] * 0.25
 
         button_pos = self.get_button_pos(self.load_plan_button)
         print("Button global position:", button_pos)
