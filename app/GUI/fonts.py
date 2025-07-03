@@ -7,9 +7,9 @@ def title_font(title) -> QFont:
     title.setStyleSheet("""
                         QLabel {
                         color: #00AB2E;
-                        font-size: 65px;
                         }
                         """)
+    return title
 
 def title_font2(title) -> QFont:
     title = QFont("Open Sans", 40, QFont.Bold)
@@ -36,7 +36,6 @@ def button_style1(button: QPushButton):
                             border: none;
                             text-decoration: none;
                             display: inline-block;
-                            font-size: 50px;
                             margin: 4px 2px;
                             transition-duration: 0.4s;
                             cursor: pointer;
@@ -272,8 +271,7 @@ def text_box_style1(text_box: QLineEdit):
                 border: 1px solid black;  
                 border-radius: 5px;  
                 padding: 5px;        
-                min-height: 20px;                      
-                font-size: 15px;
+                min-height: 20px;            
             }
         """)
 

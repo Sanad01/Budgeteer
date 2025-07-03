@@ -3,7 +3,7 @@ from PyQt5.QtCore import pyqtSignal, QObject, Qt, QPropertyAnimation, QRect
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QInputDialog, QMessageBox, \
     QListWidget, QSpacerItem, QSizePolicy
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtGui import QPixmap, QIcon, QFont
 
 from app.GUI.fonts import title_font, text_font, list_widget_style, button_style1a, button_style3
 from app.methods.methods import play_music
@@ -61,13 +61,9 @@ class StartScreen(QWidget):
 
         # load plan button
         self.load_plan_button = QPushButton("-  Load Plan")
-        self.create_list()
-        print(self.plan_name_list)
-        if self.plan_name_list:
-            self.load_plan_button.clicked.connect(self.show_list)
-        else:
-            self.load_plan_button.clicked.connect(lambda: QMessageBox.about(self, "No plan available", "There are no plans to load"))
+
         row2.addWidget(self.load_plan_button)
+
         row2.addStretch(1)
 
         # settings button
@@ -82,11 +78,13 @@ class StartScreen(QWidget):
         row4.addStretch(1)
 
         buttons = [self.start_button, self.load_plan_button, settings_button, exit_button]
+        relative_font_size = max(10, self.screen_manager.screen_size[1] // 35)
         for button in buttons:
             button_style1(button)
-            button_style1(button)
-            button.setFixedWidth(self.start_button.sizeHint().width() + 60)
-            text_font(button)
+            button.setMinimumSize(self.screen_manager.screen_size[0] // 5, self.screen_manager.screen_size[1] // 13)
+            font = QFont()
+            font.setPointSize(relative_font_size)
+            button.setFont(font)
 
         col1.addStretch(1)
         rows = [row1, row2, row3, row4]
@@ -95,11 +93,23 @@ class StartScreen(QWidget):
             col1.addSpacing(60)
         col1.addStretch(1)
 
+        self.create_list()
+        print(self.plan_name_list)
+        if self.plan_name_list:
+            self.load_plan_button.clicked.connect(self.show_list)
+        else:
+            self.load_plan_button.clicked.connect(
+                lambda: QMessageBox.about(self, "No plan available", "There are no plans to load"))
+
         return col1
 
     def create_col2(self):
         intro_text = QLabel("BUDGETEER", self)
         title_font(intro_text)
+        relative_font_size = max(10, self.screen_manager.screen_size[1] // 15)
+        font = QFont()
+        font.setPointSize(relative_font_size)
+        intro_text.setFont(font)
         x = ((self.screen_manager.screen_size[0] - intro_text.sizeHint().width()) // 2)
         y = 30  # arbitrary vertical offset
         intro_text.move(x, y)
@@ -121,16 +131,20 @@ class StartScreen(QWidget):
 
         return col3
 
+    """
     def create_load_list(self):
         # set the Qlist position to be next to load button
+        x = self.screen_manager.screen_size[0] * 0.3125
+        y = self.screen_manager.screen_size[1] * 10.8
         button_pos = self.get_button_pos(self.load_plan_button)
-        self.plan_name_list.move(button_pos.x() + 600, button_pos.y() - 100 + self.load_plan_button.height())
+        self.plan_name_list.move(button_pos.x() + x, button_pos.y() - y + self.load_plan_button.height())
 
         # move select, cancel buttons relative to the pos of the Qlist
         list_pos = self.plan_name_list.pos()
         self.select_button.move(int(list_pos.x() + self.plan_name_list.width() / 2) - 2,
                                 list_pos.y() + self.plan_name_list.height() - 9)
         self.cancel_button.move(int(list_pos.x()) + 2, list_pos.y() + self.plan_name_list.height() - 9)
+    """
 
 
     # create an input dialog when the user presses start new plan
@@ -155,6 +169,9 @@ class StartScreen(QWidget):
 
     def create_list(self):
 
+        x = self.screen_manager.screen_size[0] * 0.3125
+        y = self.load_plan_button.mapToGlobal(self.load_plan_button.rect().topLeft()).y()
+        print(y)
         self.plan_name_list = QListWidget(self)
 
         list_widget_style(self.plan_name_list)
@@ -173,7 +190,7 @@ class StartScreen(QWidget):
 
         # set the Qlist position to be next to load button
         button_pos = self.get_button_pos(self.load_plan_button)
-        self.plan_name_list.move(button_pos.x() + 600, button_pos.y() - 100 + self.load_plan_button.height())
+        self.plan_name_list.move(button_pos.x() + int(x), y)
 
         # move select, cancel buttons relative to the pos of the Qlist
         list_pos = self.plan_name_list.pos()

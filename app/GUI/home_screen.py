@@ -59,7 +59,7 @@ class HomeScreen(QWidget):
         combobox_style(self.dropdown)
 
         self.amount = QLineEdit(self)
-        self.amount.setMinimumWidth(self.screen_manager.screen_size[0] // 4)
+        self.amount.setMinimumWidth(self.screen_manager.screen_size[0] // 7)
         self.amount.setPlaceholderText("Enter amount here")
         text_box_style1(self.amount)
         int_validator = QIntValidator(0, 999999999)
@@ -68,7 +68,7 @@ class HomeScreen(QWidget):
                                        self.screen_manager.add_comma(text_box, text))
 
         self.description = QLineEdit(self)
-        self.description.setMinimumWidth(self.screen_manager.screen_size[0] // 4)
+        self.description.setMinimumWidth(self.screen_manager.screen_size[0] // 7)
         self.description.setPlaceholderText("Enter description here")
         text_box_style1(self.description)
 
