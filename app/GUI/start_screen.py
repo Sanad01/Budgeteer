@@ -171,8 +171,8 @@ class StartScreen(QWidget):
         self.plan_name_list = QListWidget(self)
 
         list_widget_style(self.plan_name_list)
-        self.plan_name_list.setFixedWidth(400)
-        self.plan_name_list.setFixedHeight(500)
+        self.plan_name_list.setMinimumWidth(self.screen_manager.screen_size[0] // 5)
+        self.plan_name_list.setFixedHeight(self.screen_manager.screen_size[0] // 5)
         self.plan_name_list.setFont(text_font(self.plan_name_list.items))  # ← fix this line too if needed
         self.create_list_buttons()
         self.plan_name_list.hide()
