@@ -77,12 +77,12 @@ class DatabaseManager:
                     print(query.value(1))
                     return {
                         "income": income,
-                        "rent": round((query.value(1) / income) * 100, 1),
-                        "utilities": round((query.value(2) / income) * 100, 1),
-                        "bills": round((query.value(3) / income) * 100, 1),
-                        "transportation": round((query.value(4) / income) * 100, 1),
-                        "loans": round((query.value(5) / income) * 100, 1),
-                        "budget": round((query.value(6) / income) * 100, 1)
+                        "rent": query.value(1),
+                        "utilities": query.value(2),
+                        "bills": query.value(3),
+                        "transportation": query.value(4),
+                        "loans": query.value(5),
+                        "budget": query.value(6)
                     }
 
                 else:

@@ -1,5 +1,6 @@
 import json
 import os.path
+from venv import create
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtSql import QSqlQuery
@@ -28,6 +29,21 @@ class HomeScreen(QWidget):
 
     def init_ui(self):
         main_layout = QHBoxLayout(self)
+
+        self.money_spent = self.get_money_spent()
+        col1 = self.create_col1()
+        print(f"this is the money spent {self.money_spent}")
+
+        col2 = self.create_col2()
+
+        main_layout.addLayout(col1)
+        main_layout.addStretch()
+        main_layout.addLayout(col2)
+
+
+        self.setLayout(main_layout)
+
+    def create_col2(self):
         outer_frame = QFrame(self)
         outer_frame.setFrameShape(QFrame.Panel)  # Set the frame shape to Box (border around the frame)
         outer_frame.setStyleSheet("background-color: #A1662F;")
@@ -125,12 +141,35 @@ class HomeScreen(QWidget):
         col1.addLayout(row3)
         col1.addLayout(row4)
 
-        main_layout.addStretch()
-        main_layout.addLayout(col1)
+        return col1
 
-        self.setLayout(main_layout)
+    def create_col1(self):
+        data = self.db.get_percentages(self.screen_manager.name)
+        col1 = QHBoxLayout(self)
 
-    def c
+        row0 = QVBoxLayout(self)
+
+        ##############row1################
+        budget = data.get("budget")
+        balance = budget - self.money_spent
+        spending_money = QLabel(f"Monthly Balance {balance}")
+
+        row0.addWidget(spending_money)
+        col1.addLayout(row0)
+        return col1
+
+    def get_money_spent(self):
+        money_spent = 0
+        for table in self.tables:
+            for row in range(table.rowCount()):
+                item = table.item(row, 1)
+                if item is not None:
+                    value = int(item.text())
+                    money_spent += value
+                else:
+                    continue
+
+        return money_spent
 
     def on_frame_click(self, frame):
         for i, box in enumerate(self.calendar_boxes):

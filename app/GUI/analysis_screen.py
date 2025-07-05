@@ -121,11 +121,17 @@ class AnalysisScreen(QWidget):
         print(f"is this it: {data}")
         self.income = data.get("income")
         self.rent_percent = data.get("rent")
+        self.rent_percent = round((self.rent_percent / self.income) * 100, 1)
         self.utilities_percent = data.get("utilities")
+        self.utilities_percent = round((self.utilities_percent / self.income) * 100, 1)
         self.bills_percent = data.get("bills")
+        self.bills_percent = round((self.bills_percent / self.income) * 100, 1)
         self.transportation_percent = data.get("transportation")
+        self.transportation_percent = round((self.transportation_percent / self.income) * 100, 1)
         self.loans_percent = data.get("loans")
+        self.loans_percent = round((self.loans_percent / self.income) * 100, 1)
         self.budget_percent = data.get("budget")
+        self.budget_percent = round((self.budget_percent / self.income) * 100, 1)
 
     # cascade slide animation from left to right with delay between each line
     def fade_animation(self, lines: [], delay):
