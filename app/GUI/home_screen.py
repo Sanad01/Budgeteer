@@ -130,6 +130,8 @@ class HomeScreen(QWidget):
 
         self.setLayout(main_layout)
 
+    def c
+
     def on_frame_click(self, frame):
         for i, box in enumerate(self.calendar_boxes):
             if hasattr(box, 'selected') and box.selected:  # don't affect the day labels (Sun, Mon...)
