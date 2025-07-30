@@ -30,7 +30,7 @@ class HomeScreen(QWidget):
     def init_ui(self):
         main_layout = QHBoxLayout(self)
 
-        self.money_spent = self.get_money_spent()
+        self.money_spent = self.db.get_total(self.screen_manager.name)
         col1 = self.create_col1()
         print(f"this is the money spent {self.money_spent}")
 
