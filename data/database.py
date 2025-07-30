@@ -1,3 +1,4 @@
+import datetime
 import sys
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from PyQt5.QtWidgets import QMessageBox
@@ -56,6 +57,7 @@ class DatabaseManager:
 
         query.exec_('''CREATE TABLE IF NOT EXISTS expenses
                                        (name TEXT NULL PRIMARY KEY, category TEXT NULL, amount REAL)''')
+
     def get_percentages(self, plan_name):
         query = QSqlQuery()
         query.prepare('''SELECT income, rent, utilities, bills, transportation, loans, budget 
@@ -116,7 +118,7 @@ class DatabaseManager:
 
         except Exception as e:
             self.db.rollback()
-            print(f"An error occured: {e}")
+            print(f"An error occurred: {e}")
 
 
     # for loading a plan
@@ -141,5 +143,27 @@ class DatabaseManager:
             QSqlDatabase.removeDatabase(QSqlDatabase.defaultConnection)
             print("Database connection closed.")
 
+    def insert_money_spent(self, category, amount):
+        query = QSqlQuery()
+
+        try:
+            self.db.transaction()
+
+            query.prepare('''INSERT INTO expenses (category, amount)
+                             VALUES (?, ?)''')
+            query.addBindValue(category)
+            query.addBindValue(amount)
+
+            if not query.exec_():
+                raise Exception("Insert into table2 failed")
+
+            if not self.db.commit():
+                raise Exception("Commit failed")
+
+            print("Data inserted successfully")
+
+        except Exception as e:
+            self.db.rollback()
+            print(f"An error occurred: {e}")
 
 
