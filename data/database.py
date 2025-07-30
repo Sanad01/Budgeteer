@@ -58,6 +58,14 @@ class DatabaseManager:
         query.exec_('''CREATE TABLE IF NOT EXISTS expenses
                                        (name TEXT NULL PRIMARY KEY, category TEXT NULL, amount REAL)''')
 
+    def create_totals_table(self):
+        query = QSqlQuery()
+
+        # query.exec_("DROP TABLE IF EXISTS expenses")
+
+        query.exec_('''CREATE TABLE IF NOT EXISTS totals
+                                       (name TEXT NULL PRIMARY KEY, total REAL, monthly REAL, yearly REAL)''')
+
     def get_percentages(self, plan_name):
         query = QSqlQuery()
         query.prepare('''SELECT income, rent, utilities, bills, transportation, loans, budget 
@@ -143,16 +151,17 @@ class DatabaseManager:
             QSqlDatabase.removeDatabase(QSqlDatabase.defaultConnection)
             print("Database connection closed.")
 
-    def insert_money_spent(self, category, amount):
+    def insert_money_spent(self, plan_name, category, amount):
         query = QSqlQuery()
 
         try:
             self.db.transaction()
 
-            query.prepare('''INSERT INTO expenses (category, amount)
-                             VALUES (?, ?)''')
+            query.prepare("UPDATE expenses SET category = ?, amount = ? WHERE name = :name")
+
             query.addBindValue(category)
             query.addBindValue(amount)
+            query.bindValue(':name', plan_name)
 
             if not query.exec_():
                 raise Exception("Insert into table2 failed")
@@ -167,3 +176,12 @@ class DatabaseManager:
             print(f"An error occurred: {e}")
 
 
+    def calc_total(self, amount, plan_name):
+        query = QSqlQuery()
+        query.prepare("UPDATE totals SET total = total + ? WHERE name = :name")
+        query.addBindValue(amount)
+        query.bindValue(':name', plan_name)
+
+        if not query.exec_():
+            print("Error updating total:", query.lastError().text())
+            return
