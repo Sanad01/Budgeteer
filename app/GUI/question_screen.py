@@ -182,7 +182,6 @@ class QuestionScreen(QWidget):
 
         query.prepare('''
                INSERT INTO answers (
-                   name, 
                    income, 
                    rent, 
                    utilities, 
@@ -191,7 +190,6 @@ class QuestionScreen(QWidget):
                    loans, 
                    budget
                ) VALUES (
-                   :name, 
                    :income, 
                    :rent, 
                    :utilities, 
@@ -201,7 +199,6 @@ class QuestionScreen(QWidget):
                    :budget
                )
            ''')
-        query.bindValue(':name', self.screen_manager.name)
         query.bindValue(':income', data.get('income'))
         query.bindValue(':rent', data.get('rent'))
         query.bindValue(':utilities', data.get('utilities'))

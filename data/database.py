@@ -61,7 +61,7 @@ class DatabaseManager:
     def create_totals_table(self):
         query = QSqlQuery()
 
-        # query.exec_("DROP TABLE IF EXISTS expenses")
+        # query.exec_("DROP TABLE IF EXISTS totals")
 
         query.exec_('''
         CREATE TABLE IF NOT EXISTS totals (
@@ -125,8 +125,8 @@ class DatabaseManager:
             if not query.exec_():
                 raise Exception("Insert into table2 failed")
 
-            query.prepare('''INSERT INTO totals (name)
-                                                    VALUES (?)''')
+            query.prepare('''INSERT INTO totals
+                (name, total, monthly, yearly) VALUES (?, 0, 0, 0)''')
             query.addBindValue(name)
             if not query.exec_():
                 raise Exception("Insert into table3 failed")
@@ -190,9 +190,10 @@ class DatabaseManager:
 
     def calc_total(self, amount, plan_name):
         query = QSqlQuery()
-        query.prepare("UPDATE totals SET total = total + ? WHERE name = :name")
-        query.addBindValue(amount)
-        query.bindValue(':name', plan_name)
+        query.prepare("UPDATE totals SET total = total + :amount WHERE name = :name")
+        query.bindValue(":amount", amount)
+        query.bindValue(":name", plan_name)
+        print(f"this is the amount {amount}")
 
         if not query.exec_():
             print("Error updating total:", query.lastError().text())

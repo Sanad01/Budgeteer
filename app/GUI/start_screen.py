@@ -158,7 +158,9 @@ class StartScreen(QWidget):
             self.screen_manager.name = self.input_dialog.textValue()
             if self.screen_manager.name:  # Check if the user entered text
                 print("name entered")
+                self.db.insert_plan_name(self.screen_manager.name)
                 self.go_to_income_screen()
+
             else:
                 self.show_input_dialog()
 
