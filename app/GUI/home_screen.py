@@ -30,9 +30,9 @@ class HomeScreen(QWidget):
     def init_ui(self):
         main_layout = QHBoxLayout(self)
 
-        self.money_spent = self.db.get_total(self.screen_manager.name)
+        # self.money_spent = self.db.get_total(self.screen_manager.name)
         col1 = self.create_col1()
-        print(f"this is the money spent {self.money_spent}")
+        # print(f"this is the money spent {self.money_spent}")
 
         col2 = self.create_col2()
 
@@ -100,6 +100,9 @@ class HomeScreen(QWidget):
 
         self.add_button = QPushButton("Add Expense", self)
         self.add_button.clicked.connect(self.insert_json_info)
+
+
+
         button_style4(self.add_button)
 
         self.delete_button = QPushButton("Delete Expense", self)
@@ -151,10 +154,10 @@ class HomeScreen(QWidget):
 
         ##############row1################
         budget = data.get("budget")
-        balance = budget - self.money_spent
-        spending_money = QLabel(f"Monthly Balance {balance}")
+        #balance = budget - self.money_spent
+        #spending_money = QLabel(f"Monthly Balance {balance}")
 
-        row0.addWidget(spending_money)
+        #row0.addWidget(spending_money)
         col1.addLayout(row0)
         return col1
 
@@ -266,6 +269,9 @@ class HomeScreen(QWidget):
         amount = str(self.amount.text().replace(',', ''))
         description = str(self.description.text())
         inserted_data = [category, amount, description]
+
+        # insert amount into totals table
+        self.db.calc_total(float(amount), self.screen_manager.name)
 
         # Initialize current date
         year = str(datetime.today().year)
