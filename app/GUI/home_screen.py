@@ -30,9 +30,9 @@ class HomeScreen(QWidget):
     def init_ui(self):
         main_layout = QHBoxLayout(self)
 
-        # self.money_spent = self.db.get_total(self.screen_manager.name)
+        self.money_spent = self.db.get_total(self.screen_manager.name)
         col1 = self.create_col1()
-        # print(f"this is the money spent {self.money_spent}")
+        print(f"this is the money spent {self.money_spent}")
 
         col2 = self.create_col2()
 
@@ -154,10 +154,10 @@ class HomeScreen(QWidget):
 
         ##############row1################
         budget = data.get("budget")
-        #balance = budget - self.money_spent
-        #spending_money = QLabel(f"Monthly Balance {balance}")
+        balance = budget - self.money_spent
+        spending_money = QLabel(f"Monthly Balance {balance}")
 
-        #row0.addWidget(spending_money)
+        row0.addWidget(spending_money)
         col1.addLayout(row0)
         return col1
 
