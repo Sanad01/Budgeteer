@@ -186,26 +186,16 @@ class IncomeScreen(QWidget):
         print(f"this is the budget {budget}")
 
         query.prepare('''
-               INSERT INTO answers (
-                   name, 
-                   income, 
-                   rent, 
-                   utilities, 
-                   bills, 
-                   transportation, 
-                   loans, 
-                   budget
-               ) VALUES (
-                   :name, 
-                   :income, 
-                   :rent, 
-                   :utilities, 
-                   :bills, 
-                   :transportation, 
-                   :loans, 
-                   :budget
-               )
-           ''')
+               UPDATE answers SET 
+                income = :income,
+                rent = :rent,
+                utilities = :utilities,
+                bills = :bills,
+                transportation = :transportation,
+                loans = :loans,
+                budget = :budget
+                WHERE name = :name
+                ''')
         query.bindValue(':name', self.screen_manager.name)
         query.bindValue(':income', data.get('income'))
         query.bindValue(':rent', data.get('rent'))
