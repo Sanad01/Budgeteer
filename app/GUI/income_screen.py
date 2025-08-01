@@ -155,11 +155,11 @@ class IncomeScreen(QWidget):
                         QMessageBox.warning(self, "please select pay type")
                         return 0
 
-                    self.questions[self.question_number].setVisible(False)
-                    self.text_boxes[self.question_number].setVisible(False)
                     self.weekly_radio.setVisible(False)
                     self.biweekly_radio.setVisible(False)
 
+                self.questions[self.question_number].setVisible(False)
+                self.text_boxes[self.question_number].setVisible(False)
                 self.question_number += 1
                 self.questions[self.question_number].setVisible(True)
                 self.fade_animation(self.questions[self.question_number])
@@ -227,8 +227,8 @@ class IncomeScreen(QWidget):
                 budget = :budget
                 WHERE name = :name
                 ''')
+        query.bindValue(':pay_type', self.pay_type)
         query.bindValue(':name', self.screen_manager.name)
-        query.bindValue('pay_type', self.pay_type)
         query.bindValue(':income', data.get('income'))
         query.bindValue(':rent', data.get('rent'))
         query.bindValue(':utilities', data.get('utilities'))
