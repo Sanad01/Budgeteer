@@ -30,7 +30,7 @@ class DatabaseManager:
         # query.exec_("DROP TABLE IF EXISTS answers")
 
         query.exec_('''CREATE TABLE IF NOT EXISTS answers
-                               (name TEXT NULL PRIMARY KEY, income REAL, rent REAL, utilities REAL,
+                               (name TEXT NULL PRIMARY KEY, income REAL, pay_type TEXT,rent REAL, utilities REAL,
                                 bills REAL, transportation REAL, loans REAL,
                                 budget REAL, json_expenses TEXT)''')
 
