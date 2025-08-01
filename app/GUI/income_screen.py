@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QCheckBox, QSizePolicy, QGraphicsOpacityEffect
+from PyQt5.QtWidgets import QWidget, QCheckBox, QSizePolicy, QGraphicsOpacityEffect, QRadioButton
 from PyQt5.QtCore import pyqtSignal, QObject, QPoint, QPropertyAnimation, QEasingCurve
 from PyQt5.QtCore import Qt
 from PyQt5.QtSql import QSqlQuery
@@ -35,7 +35,7 @@ class IncomeScreen(QWidget):
         main_layout = QVBoxLayout(self)
         main_layout.setAlignment(Qt.AlignCenter)
 
-        question1 = QLabel("What is your monthly income after taxes? (avg if wages)", self)
+        question1 = QLabel("How much do you make per paycheck after taxes?", self)
         question2 = QLabel("How much do you pay for rent?", self)
         question3 = QLabel("How much do you pay for utilities? (electric, gas)", self)
         question4 = QLabel("How much do you spend on bills? (internet, phone bill, subscription)", self)
@@ -78,6 +78,16 @@ class IncomeScreen(QWidget):
 
         self.box1.setVisible(True)
 
+        self.row4 = QHBoxLayout(self)
+
+        self.weekly_radio = QRadioButton("Weekly")
+        self.biweekly_radio = QRadioButton("Biweekly")
+        self.row4.addStretch(1)
+        self.row4.addWidget(self.weekly_radio)
+        self.row4.addWidget(self.biweekly_radio)
+        self.row4.addStretch(1)
+
+
         self.row3 = QHBoxLayout(self)
         self.next = QPushButton("Next", self)
         button_style1a(self.next)
@@ -101,6 +111,8 @@ class IncomeScreen(QWidget):
         main_layout.addLayout(self.row1)
         main_layout.addSpacing(50)
         main_layout.addLayout(self.row2)
+        main_layout.addSpacing(30)
+        main_layout.addLayout(self.row4)
         main_layout.addStretch(1)
         main_layout.addLayout(self.row3)
 
