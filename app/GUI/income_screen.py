@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QCheckBox, QSizePolicy, QGraphicsOpacityEffect, QRadioButton
+from PyQt5.QtWidgets import QWidget, QCheckBox, QSizePolicy, QGraphicsOpacityEffect, QRadioButton, QButtonGroup
 from PyQt5.QtCore import pyqtSignal, QObject, QPoint, QPropertyAnimation, QEasingCurve
 from PyQt5.QtCore import Qt
 from PyQt5.QtSql import QSqlQuery
@@ -26,6 +26,7 @@ class IncomeScreen(QWidget):
             "transportation": 0,
             "loans": 0
         }
+        self.pay_type = None
         self.expenses = 0
         self.db = DatabaseManager()
         self.init_ui()
@@ -80,8 +81,12 @@ class IncomeScreen(QWidget):
 
         self.row4 = QHBoxLayout(self)
 
+        self.button_group = QButtonGroup()
         self.weekly_radio = QRadioButton("Weekly")
         self.biweekly_radio = QRadioButton("Biweekly")
+        self.button_group.addButton(self.weekly_radio)
+        self.button_group.addButton(self.biweekly_radio)
+
         self.row4.addStretch(1)
         self.row4.addWidget(self.weekly_radio)
         self.row4.addWidget(self.biweekly_radio)
@@ -127,7 +132,7 @@ class IncomeScreen(QWidget):
             if self.text_boxes[self.question_number].text() == '':
                 if self:
                     QMessageBox.warning(self, "Input Error", "Please enter a $ amount")
-                    return
+                    return 0
             else:
                 income = int(self.text_boxes[0].text().replace(',', ''))
                 if self.question_number != 0:  # calculate expenses without adding the income]
@@ -140,6 +145,19 @@ class IncomeScreen(QWidget):
                                             " monthly, if this is the case this app will not help you!")
 
                         return 0
+
+                if self.question_number == 0:
+                    # save pay type
+                    selected_button = self.button_group.checkedButton()
+                    if selected_button:
+                        self.pay_type = selected_button.text()
+                    else:
+                        QMessageBox.warning(self, "please select pay type")
+                        return 0
+
+                    self.weekly_radio.setVisible(False)
+                    self.biweekly_radio.setVisible(False)
+
                 self.questions[self.question_number].setVisible(False)
                 self.text_boxes[self.question_number].setVisible(False)
                 self.question_number += 1
@@ -200,6 +218,7 @@ class IncomeScreen(QWidget):
         query.prepare('''
                UPDATE answers SET 
                 income = :income,
+                pay_type = :pay_type
                 rent = :rent,
                 utilities = :utilities,
                 bills = :bills,
@@ -208,6 +227,7 @@ class IncomeScreen(QWidget):
                 budget = :budget
                 WHERE name = :name
                 ''')
+        query.bindValue(':pay_type', self.pay_type)
         query.bindValue(':name', self.screen_manager.name)
         query.bindValue(':income', data.get('income'))
         query.bindValue(':rent', data.get('rent'))
