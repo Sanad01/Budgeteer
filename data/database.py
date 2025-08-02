@@ -32,7 +32,7 @@ class DatabaseManager:
         query.exec_('''CREATE TABLE IF NOT EXISTS answers
                                (name TEXT NULL PRIMARY KEY, income REAL, pay_type TEXT NULL, rent REAL, utilities REAL,
                                 bills REAL, transportation REAL, loans REAL,
-                                budget REAL, json_expenses TEXT)''')
+                                budget REAL, last_paycheck TEXT, json_expenses TEXT)''')
 
     '''
     @staticmethod
