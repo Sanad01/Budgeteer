@@ -1,12 +1,12 @@
-from PyQt5.QtWidgets import QWidget, QCheckBox, QSizePolicy, QGraphicsOpacityEffect, QRadioButton, QButtonGroup
-from PyQt5.QtCore import pyqtSignal, QObject, QPoint, QPropertyAnimation, QEasingCurve
+from PyQt5.QtWidgets import QWidget, QCheckBox, QSizePolicy, QGraphicsOpacityEffect, QRadioButton, QButtonGroup, \
+    QDateEdit
+from PyQt5.QtCore import pyqtSignal, QObject, QPoint, QPropertyAnimation, QEasingCurve, QDate
 from PyQt5.QtCore import Qt
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox
 from PyQt5.QtGui import QIntValidator
-from unicodedata import category
 
-from app.GUI.fonts import check_box, title_font, text_box_style, button_style1a
+from app.GUI.fonts import check_box, title_font, text_box_style, button_style1a, calendar_style, date_box_style
 from data.database import DatabaseManager
 
 
@@ -43,8 +43,9 @@ class IncomeScreen(QWidget):
         question4 = QLabel("How much do you spend on bills? (internet, phone bill, subscription)", self)
         question5 = QLabel("How much do you spend on transportation? (gas, bus fare)", self)
         question6 = QLabel("How much do you spend on recurring payments? (debt, insurance, child support)", self)
+        question7 = QLabel("When was your last paycheck?", self)
 
-        self.questions = [question1, question2, question3, question4, question5, question6]
+        self.questions = [question1, question2, question3, question4, question5, question6, question7]
         self.question_number = 0
 
         self.box1 = QLineEdit(self)
@@ -53,8 +54,17 @@ class IncomeScreen(QWidget):
         self.box4 = QLineEdit(self)
         self.box5 = QLineEdit(self)
         self.box6 = QLineEdit(self)
+        # user chooses date
+        self.box7 = QDateEdit(self)
+        self.box7.setCalendarPopup(True)
+        self.box7.setDate(QDate.currentDate())
+        self.box7.setMaximumDate(QDate.currentDate())
 
-        self.text_boxes = [self.box1, self.box2, self.box3, self.box4, self.box5, self.box6]
+        #date styles
+        date_box_style(self.box7)
+        calendar_style(self.box7.calendarWidget())
+
+        self.text_boxes = [self.box1, self.box2, self.box3, self.box4, self.box5, self.box6, self.box7]
 
         self.row1 = QHBoxLayout(self)
         self.row1.setAlignment(Qt.AlignCenter)
@@ -67,13 +77,14 @@ class IncomeScreen(QWidget):
         self.row2 = QHBoxLayout(self)
         self.row2.setAlignment(Qt.AlignCenter)
 
+        int_validator = QIntValidator(0, 999999999)
         for box in self.text_boxes:
             box.setFixedWidth(400)
             box.setFixedHeight(int(self.height() / 6))
-            int_validator = QIntValidator(0, 999999999)
-            box.setValidator(int_validator)
-            box.textEdited.connect(lambda text, text_box=box: self.screen_manager.add_comma(text_box, text))
-            text_box_style(box)
+            if box != self.box7:
+                box.setValidator(int_validator)
+                box.textEdited.connect(lambda text, text_box=box: self.screen_manager.add_comma(text_box, text))
+                text_box_style(box)
             box.setAlignment(Qt.AlignCenter)
             box.setVisible(False)
             self.row2.addWidget(box)

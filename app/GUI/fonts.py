@@ -1,6 +1,7 @@
+from PyQt5.QtCore import QCalendar
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QPushButton, QLabel, QInputDialog, QListWidget, QLineEdit, QCheckBox, QTableWidget, \
-    QComboBox, QFrame
+    QComboBox, QFrame, QCalendarWidget, QDateEdit
 
 
 def title_font(title) -> QFont:
@@ -311,6 +312,18 @@ def combobox_style(box: QComboBox):
         }
     """)
 
+def date_box_style(box: QDateEdit):
+    box.setStyleSheet("""
+        QDateEdit {
+            background-color: white;
+            border: 4px solid black;  
+            border-radius: 5px;  
+            padding: 5px;        
+            font-size: 40px;
+            color: black;
+        }
+    """)
+
 def frame_style(frame: QFrame):
     frame.setStyleSheet("""
         QFrame {
@@ -319,4 +332,35 @@ def frame_style(frame: QFrame):
         box-shadow: 4px 4px 8px #666666;  /* Creates the shadow for a 3D effect */
         }
     
+    """)
+
+def calendar_style(calendar: QCalendarWidget):
+    calendar.setStyleSheet("""
+    QCalendarWidget QWidget {
+        background-color: #F5F5DC;  /* beige */
+        color: #2E8B57;             /* sea green text */
+    }
+
+    QCalendarWidget QAbstractItemView {
+        background-color: #F5F5DC;
+        selection-background-color: #98FB98;  /* pale green highlight */
+        selection-color: black;
+        gridline-color: #C0C0C0;
+    }
+
+    QCalendarWidget QToolButton {
+        background-color: #2E8B57;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 4px;
+    }
+
+    QCalendarWidget QToolButton:hover {
+        background-color: #3CB371;
+    }
+
+    QCalendarWidget QMenu {
+        background-color: white;
+    }
     """)
