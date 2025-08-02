@@ -152,7 +152,7 @@ class IncomeScreen(QWidget):
                     if selected_button:
                         self.pay_type = selected_button.text()
                     else:
-                        QMessageBox.warning(self, "please select pay type")
+                        QMessageBox.warning(self, "pay type can't be empty", "please choose weekly or bi-weekly")
                         return 0
 
                     self.weekly_radio.setVisible(False)
@@ -172,13 +172,20 @@ class IncomeScreen(QWidget):
 
     def back_button(self):
         if self.animation is None or self.animation.state() == QPropertyAnimation.Stopped:
-            if self.question_number > 0:
+            if self.question_number > 1:
                 self.expenses -= int(self.text_boxes[self.question_number - 1].text().replace(',', ''))
                 self.continue_button.setVisible(False)
                 self.next.setVisible(True)
                 self.questions[self.question_number].setVisible(False)
                 self.text_boxes[self.question_number].setVisible(False)
                 self.question_number -= 1
+                # radio buttons
+                if self.question_number == 0:
+                    self.weekly_radio.setVisible(True)
+                    self.biweekly_radio.setVisible(True)
+                    self.fade_animation(self.weekly_radio)
+                    self.fade_animation(self.biweekly_radio)
+
                 self.questions[self.question_number].setVisible(True)
                 self.fade_animation(self.questions[self.question_number])
                 self.text_boxes[self.question_number].setVisible(True)
@@ -210,6 +217,10 @@ class IncomeScreen(QWidget):
         query = QSqlQuery()
 
         # Calculate budget
+        if self.pay_type == "weekly":
+            data["income"] = data["income"] * 4
+        elif self.pay_type == "bi-weekly":
+            data["income"] = data["income"] * 2
         budget = data["income"] - self.expenses
 
         print(f"this is your expenses: {self.expenses}")
@@ -218,7 +229,7 @@ class IncomeScreen(QWidget):
         query.prepare('''
                UPDATE answers SET 
                 income = :income,
-                pay_type = :pay_type
+                pay_type = :pay_type,
                 rent = :rent,
                 utilities = :utilities,
                 bills = :bills,
@@ -227,9 +238,9 @@ class IncomeScreen(QWidget):
                 budget = :budget
                 WHERE name = :name
                 ''')
-        query.bindValue(':pay_type', self.pay_type)
         query.bindValue(':name', self.screen_manager.name)
         query.bindValue(':income', data.get('income'))
+        query.bindValue(':pay_type', self.pay_type)
         query.bindValue(':rent', data.get('rent'))
         query.bindValue(':utilities', data.get('utilities'))
         query.bindValue(':bills', data.get('bills'))
@@ -282,4 +293,4 @@ class IncomeScreen(QWidget):
 
     def calculate_expenses(self):
         self.expenses += int(self.text_boxes[self.question_number].text().replace(',', ''))
-        print(self.expenses)
+        print(f"what is this {self.expenses}")

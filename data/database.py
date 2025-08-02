@@ -27,7 +27,7 @@ class DatabaseManager:
     def create_answers_table(self):
         query = QSqlQuery()
 
-        query.exec_("DROP TABLE IF EXISTS answers")
+        # query.exec_("DROP TABLE IF EXISTS answers")
 
         query.exec_('''CREATE TABLE IF NOT EXISTS answers
                                (name TEXT NULL PRIMARY KEY, income REAL, pay_type TEXT NULL, rent REAL, utilities REAL,
