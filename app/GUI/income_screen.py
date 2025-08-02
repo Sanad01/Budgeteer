@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox
 from PyQt5.QtGui import QIntValidator
+from unicodedata import category
 
 from app.GUI.fonts import check_box, title_font, text_box_style, button_style1a
 from data.database import DatabaseManager
@@ -135,6 +136,11 @@ class IncomeScreen(QWidget):
                     return 0
             else:
                 income = int(self.text_boxes[0].text().replace(',', ''))
+                if self.pay_type == "Weekly":
+                    income *= 4
+                elif self.pay_type == "Biweekly":
+                    income *= 2
+
                 if self.question_number != 0:  # calculate expenses without adding the income]
                     self.calculate_expenses()
                     if self.expenses > income:
@@ -217,10 +223,10 @@ class IncomeScreen(QWidget):
         query = QSqlQuery()
 
         # Calculate budget
-        if self.pay_type == "weekly":
-            data["income"] = data["income"] * 4
-        elif self.pay_type == "bi-weekly":
-            data["income"] = data["income"] * 2
+        if self.pay_type == "Weekly":
+            data["income"] *= 4
+        elif self.pay_type == "Biweekly":
+            data["income"] *= 2
         budget = data["income"] - self.expenses
 
         print(f"this is your expenses: {self.expenses}")
@@ -263,12 +269,14 @@ class IncomeScreen(QWidget):
     def cont_button_function(self):
         text_boxes = [self.box1.text(), self.box2.text(), self.box3.text(), self.box4.text(), self.box5.text(),
                       self.box6.text()]
-        # check if any text boxes are empty and display warning if they are
+
+
 
         # store the values inserted into each text box as integer values into self.categories
         keys = self.category.keys()
         for key, text in zip(keys, text_boxes):
             self.category[key] = int(text.replace(",", ""))
+
         print(f"this is the income {self.category['income']}")
         print(self.category)
         if self.insert_answers_into_db(self.category) == 0:
