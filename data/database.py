@@ -81,8 +81,8 @@ class DatabaseManager:
         query.exec_('''
         CREATE TABLE IF NOT EXISTS paycheck_dates (
             id INTEGER PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            date TEXT NOT NULL,
+            user_id TEXT,
+            date TEXT,
             FOREIGN KEY (user_id) REFERENCES answers(name)
         )
     ''')
@@ -141,21 +141,21 @@ class DatabaseManager:
                 raise Exception("Insert into table2 failed")
 
             query.prepare('''INSERT INTO totals
-                (name, total, monthly, yearly) VALUES (?, 0, 0, 0)''')
+                (name) VALUES (?)''')
             query.addBindValue(name)
             if not query.exec_():
                 raise Exception("Insert into table3 failed")
+
+            query.prepare('''INSERT INTO paycheck_dates (user_id)
+                                                     VALUES (?)''')
+            query.addBindValue(name)
+            if not query.exec_():
+                raise Exception("Insert into dates failed")
 
             if not self.db.commit():
                 raise Exception("Commit failed")
 
             print("Data inserted successfully")
-
-            query.prepare('''INSERT INTO paycheck_dates (user_id)
-                                         VALUES (?)''')
-            query.addBindValue(name)
-            if not query.exec_():
-                raise Exception("Insert into table1 failed")
 
         except Exception as e:
             self.db.rollback()
