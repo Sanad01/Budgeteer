@@ -322,7 +322,7 @@ class IncomeScreen(QWidget):
         query = QSqlQuery()
 
         query.prepare('''
-        UPDATE answers SET last_paycheck = :last_paycheck
+        UPDATE paycheck_dates SET date = :last_paycheck
         WHERE name = :name
         ''')
         query.bindValue(':name', self.screen_manager.name)

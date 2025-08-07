@@ -10,6 +10,7 @@ class DatabaseManager:
         self.create_connection()
         self.create_answers_table()
         self.create_expense_table()
+        self.create_dates_table()
         # self.print_table_schema()
         self.plan_dict = {}
         self.fetch_plan()
@@ -32,7 +33,7 @@ class DatabaseManager:
         query.exec_('''CREATE TABLE IF NOT EXISTS answers
                                (name TEXT NULL PRIMARY KEY, income REAL, pay_type TEXT NULL, rent REAL, utilities REAL,
                                 bills REAL, transportation REAL, loans REAL,
-                                budget REAL, last_paycheck TEXT, json_expenses TEXT)''')
+                                budget REAL, json_expenses TEXT)''')
 
     '''
     @staticmethod
@@ -69,6 +70,20 @@ class DatabaseManager:
             total REAL DEFAULT 0,
             monthly REAL DEFAULT 0,
             yearly REAL DEFAULT 0
+        )
+    ''')
+
+    def create_dates_table(self):
+        query = QSqlQuery()
+
+        # query.exec_("DROP TABLE IF EXISTS paycheck_dates")
+
+        query.exec_('''
+        CREATE TABLE IF NOT EXISTS paycheck_dates (
+            id INTEGER PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            date TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES answers(name)
         )
     ''')
 
@@ -135,6 +150,12 @@ class DatabaseManager:
                 raise Exception("Commit failed")
 
             print("Data inserted successfully")
+
+            query.prepare('''INSERT INTO paycheck_dates (user_id)
+                                         VALUES (?)''')
+            query.addBindValue(name)
+            if not query.exec_():
+                raise Exception("Insert into table1 failed")
 
         except Exception as e:
             self.db.rollback()
