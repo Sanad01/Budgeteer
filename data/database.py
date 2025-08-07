@@ -249,3 +249,18 @@ class DatabaseManager:
             next_date += delta
 
         return new_dates
+
+    def insert_generated_dates(self, user_id, date_list):
+        query = QSqlQuery()
+        query.exec_("PRAGMA foreign_keys = ON")
+
+        for date_str in date_list:
+            query.prepare('''
+                INSERT INTO paycheck_dates (user_id, date)
+                VALUES (:user_id, :date)
+            ''')
+            query.bindValue(':user_id', user_id)
+            query.bindValue(':date', date_str)
+
+            if not query.exec_():
+                print("Error inserting", date_str, ":", query.lastError().text())
