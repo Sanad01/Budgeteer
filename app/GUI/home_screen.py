@@ -25,6 +25,7 @@ class HomeScreen(QWidget):
         self.init_json()
         self.tables = []
         self.data = {}
+        self.paycheck_dates = []
         self.init_ui()
 
     def init_ui(self):

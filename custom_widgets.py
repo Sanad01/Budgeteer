@@ -12,7 +12,7 @@ class ClickableFrame(QFrame):
         self.selected = None
         self.paycheck_date = paycheck_date
         self.paycheck_dates = paycheck_dates or []
-        
+
         self.label = QLabel(self)
         layout = QVBoxLayout(self)
         layout.addWidget(self.label)
@@ -37,9 +37,6 @@ class ClickableFrame(QFrame):
         if self.paycheck_date in self.paycheck_dates:
             self.setStyleSheet("background-color: lightgreen; border: 1px solid green;")
             self.label.setText(f"💲 {date_obj.strftime('%b %d')}")
-        else:
-            self.setStyleSheet("background-color: lightgray; border: 1px solid #ccc;")
-            self.label.setText(date_obj.strftime('%b %d'))
 
 
 class HoverFilter(QObject):

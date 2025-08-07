@@ -264,3 +264,25 @@ class DatabaseManager:
 
             if not query.exec_():
                 print("Error inserting", date_str, ":", query.lastError().text())
+
+    def get_pay_dates(self, user_id, month):
+        query = QSqlQuery()
+        query.exec_("PRAGMA foreign_keys = ON")
+
+        query.prepare('''
+                SELECT date FROM paycheck_dates
+                WHERE user_id = :user_id AND date LIKE :month || '%'
+        ''')
+        query.bindValue(':user_id', user_id)
+        query.bindValue(':month', month)
+
+        if not query.exec_():
+            print("Query failed:", query.lastError().text())
+            return []
+
+        dates = []
+        while query.next():
+            date_str = query.value(0)  # get the 'date' column
+            dates.append(date_str)
+
+        return dates
