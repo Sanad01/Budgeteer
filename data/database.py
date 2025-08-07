@@ -10,6 +10,7 @@ class DatabaseManager:
         self.create_connection()
         self.create_answers_table()
         self.create_expense_table()
+        self.create_dates_table()
         # self.print_table_schema()
         self.plan_dict = {}
         self.fetch_plan()
@@ -72,6 +73,20 @@ class DatabaseManager:
         )
     ''')
 
+    def create_dates_table(self):
+        query = QSqlQuery()
+
+        # query.exec_("DROP TABLE IF EXISTS paycheck_dates")
+
+        query.exec_('''
+        CREATE TABLE IF NOT EXISTS paycheck_dates (
+            id INTEGER PRIMARY KEY,
+            user_id TEXT,
+            date TEXT,
+            FOREIGN KEY (user_id) REFERENCES answers(name)
+        )
+    ''')
+
     def get_percentages(self, plan_name):
         query = QSqlQuery()
         query.prepare('''SELECT income, rent, utilities, bills, transportation, loans, budget 
@@ -126,10 +141,16 @@ class DatabaseManager:
                 raise Exception("Insert into table2 failed")
 
             query.prepare('''INSERT INTO totals
-                (name, total, monthly, yearly) VALUES (?, 0, 0, 0)''')
+                (name) VALUES (?)''')
             query.addBindValue(name)
             if not query.exec_():
                 raise Exception("Insert into table3 failed")
+
+            query.prepare('''INSERT INTO paycheck_dates (user_id)
+                                                     VALUES (?)''')
+            query.addBindValue(name)
+            if not query.exec_():
+                raise Exception("Insert into dates failed")
 
             if not self.db.commit():
                 raise Exception("Commit failed")

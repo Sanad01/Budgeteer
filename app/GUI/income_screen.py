@@ -273,6 +273,8 @@ class IncomeScreen(QWidget):
         else:
             print("Data inserted successfully.")
 
+        self.insert_date_into_db()
+
 
     def emit_cont_signal(self):
         self.contToAnalysis.emit()
@@ -313,3 +315,33 @@ class IncomeScreen(QWidget):
     def calculate_expenses(self):
         self.expenses += int(self.text_boxes[self.question_number].text().replace(',', ''))
         print(f"what is this {self.expenses}")
+
+    def insert_date_into_db(self):
+        date_str = self.box7.date().toString("yyyy-MM-dd")
+
+        query = QSqlQuery()
+
+        query.prepare('''
+        INSERT INTO paycheck_dates (user_id, date)
+        VALUES (:user_id, :last_paycheck)
+        ''')
+        query.bindValue(':user_id', self.screen_manager.name)
+        query.bindValue(':last_paycheck', date_str)
+
+        if not query.exec_():
+            # Detailed error handling
+            error = query.lastError()
+            print(f"Error inserting data: {error.text()}")
+            print(f"SQL query: {query.executedQuery()}")
+        else:
+            print("Date for paycheck inserted successfully.")
+
+            query.prepare('''
+                SELECT * FROM paycheck_dates
+                WHERE user_id = :user_id
+                ORDER BY date ASC
+            ''')
+            query.bindValue(':user_id', self.screen_manager.name)
+
+            if not query.exec_():
+                print("Error:", query.lastError().text())
