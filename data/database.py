@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import sys
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from PyQt5.QtWidgets import QMessageBox
@@ -233,3 +233,19 @@ class DatabaseManager:
             return query.value(0)  # Index 0 = first column ("total")
 
         return None
+
+    def generate_paycheck_dates(self, last_date_str, interval_type):
+        last_date = datetime.strptime(last_date_str, '%Y-%m-%d')
+        delta = timedelta(days=7) if interval_type == "weekly" else timedelta(days=14)
+
+        end_of_month = last_date.replace(day=28) + timedelta(days=4)
+        end_of_month = end_of_month.replace(day=1) - timedelta(days=1)
+
+        new_dates = []
+        next_date = last_date + delta
+
+        while next_date <= end_of_month:
+            new_dates.append(next_date.strftime('%Y-%m-%d'))
+            next_date += delta
+
+        return new_dates
