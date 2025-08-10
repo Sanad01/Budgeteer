@@ -236,7 +236,7 @@ class DatabaseManager:
 
     def generate_paycheck_dates(self, last_date_str, interval_type):
         last_date = datetime.strptime(last_date_str, '%Y-%m-%d')
-        delta = timedelta(days=7) if interval_type == "weekly" else timedelta(days=14)
+        delta = timedelta(days=7) if interval_type == "Weekly" else timedelta(days=14)
 
         end_of_month = last_date.replace(day=28) + timedelta(days=4)
         end_of_month = end_of_month.replace(day=1) - timedelta(days=1)
