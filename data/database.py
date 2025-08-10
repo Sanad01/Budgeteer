@@ -265,16 +265,22 @@ class DatabaseManager:
             if not query.exec_():
                 print("Error inserting", date_str, ":", query.lastError().text())
 
-    def get_pay_dates(self, user_id, month):
+    def get_pay_dates(self, user_id):
+        now = datetime.now()
+        year = now.year
+        month = now.month
         query = QSqlQuery()
         query.exec_("PRAGMA foreign_keys = ON")
 
+        year_month = f"{year}-{month:02d}"
+
         query.prepare('''
                 SELECT date FROM paycheck_dates
-                WHERE user_id = :user_id AND date LIKE :month || '%'
-        ''')
+                WHERE user_id = :user_id
+                AND date LIKE :year_month || '%'
+            ''')
         query.bindValue(':user_id', user_id)
-        query.bindValue(':month', month)
+        query.bindValue(':year_month', year_month)
 
         if not query.exec_():
             print("Query failed:", query.lastError().text())

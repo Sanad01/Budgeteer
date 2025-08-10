@@ -25,7 +25,7 @@ class HomeScreen(QWidget):
         self.init_json()
         self.tables = []
         self.data = {}
-        self.paycheck_dates = []
+        self.paycheck_dates = self.db.get_pay_dates(self.screen_manager.name)
         self.init_ui()
 
     def init_ui(self):
@@ -177,8 +177,11 @@ class HomeScreen(QWidget):
 
     def on_frame_click(self, frame):
         for i, box in enumerate(self.calendar_boxes):
-            if hasattr(box, 'selected') and box.selected:  # don't affect the day labels (Sun, Mon...)
-                box.setStyleSheet("background-color: white;")
+            if hasattr(box, 'selected') and box.selected:
+                if box.pay_date:
+                    box.setStyleSheet("background-color: #1AC91D;")
+                else:
+                    box.setStyleSheet("background-color: white;")
                 self.tables[i].clear()
                 self.tables[i].hide()
                 self.tables[i].setHorizontalHeaderLabels(["Category", "Amount", "Description"])  # don't clear header
@@ -196,7 +199,7 @@ class HomeScreen(QWidget):
 
         self.calendar_boxes = []
         for i in range(days_in_month):
-            frame = ClickableFrame(self)
+            frame = ClickableFrame(self, i+1, self.paycheck_dates)
             frame.setMaximumSize(90, 90)
             frame.setFrameShape(QFrame.StyledPanel)
             frame.clicked.connect(lambda qframe=frame: self.on_frame_click(qframe))
@@ -208,7 +211,6 @@ class HomeScreen(QWidget):
             if i == datetime.today().day:
                 frame.click()  # select the frame corresponding to the current daty of the month
             self.calendar_boxes.append(frame)
-            print(f"this is the size of calendar_boxes{len(self.calendar_boxes)}")
 
         self.create_day_labels()
 
