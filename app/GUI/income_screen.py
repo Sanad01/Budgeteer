@@ -336,12 +336,5 @@ class IncomeScreen(QWidget):
         else:
             print("Date for paycheck inserted successfully.")
 
-            query.prepare('''
-                SELECT * FROM paycheck_dates
-                WHERE user_id = :user_id
-                ORDER BY date ASC
-            ''')
-            query.bindValue(':user_id', self.screen_manager.name)
-
-            if not query.exec_():
-                print("Error:", query.lastError().text())
+        new_dates = self.db.generate_paycheck_dates(date_str, self.pay_type)
+        self.db.insert_generated_dates(self.screen_manager.name, new_dates)

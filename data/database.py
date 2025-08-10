@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import sys
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from PyQt5.QtWidgets import QMessageBox
@@ -233,3 +233,62 @@ class DatabaseManager:
             return query.value(0)  # Index 0 = first column ("total")
 
         return None
+
+    def generate_paycheck_dates(self, last_date_str, interval_type):
+        last_date = datetime.strptime(last_date_str, '%Y-%m-%d')
+        delta = timedelta(days=7) if interval_type == "Weekly" else timedelta(days=14)
+
+        end_of_month = last_date.replace(day=28) + timedelta(days=4)
+        end_of_month = end_of_month.replace(day=1) - timedelta(days=1)
+
+        new_dates = []
+        next_date = last_date + delta
+
+        while next_date <= end_of_month:
+            new_dates.append(next_date.strftime('%Y-%m-%d'))
+            next_date += delta
+
+        return new_dates
+
+    def insert_generated_dates(self, user_id, date_list):
+        query = QSqlQuery()
+        query.exec_("PRAGMA foreign_keys = ON")
+
+        for date_str in date_list:
+            query.prepare('''
+                INSERT INTO paycheck_dates (user_id, date)
+                VALUES (:user_id, :date)
+            ''')
+            query.bindValue(':user_id', user_id)
+            query.bindValue(':date', date_str)
+
+            if not query.exec_():
+                print("Error inserting", date_str, ":", query.lastError().text())
+
+    def get_pay_dates(self, user_id):
+        now = datetime.now()
+        year = now.year
+        month = now.month
+        query = QSqlQuery()
+        query.exec_("PRAGMA foreign_keys = ON")
+
+        year_month = f"{year}-{month:02d}"
+
+        query.prepare('''
+                SELECT date FROM paycheck_dates
+                WHERE user_id = :user_id
+                AND date LIKE :year_month || '%'
+            ''')
+        query.bindValue(':user_id', user_id)
+        query.bindValue(':year_month', year_month)
+
+        if not query.exec_():
+            print("Query failed:", query.lastError().text())
+            return []
+
+        dates = []
+        while query.next():
+            date_str = query.value(0)  # get the 'date' column
+            dates.append(date_str)
+
+        return dates
