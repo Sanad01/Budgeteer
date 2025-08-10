@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QCheckBox, QSizePolicy, QGraphicsOpacityEffect, QRadioButton, QButtonGroup, \
     QDateEdit
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QShortcut
 from PyQt5.QtCore import pyqtSignal, QObject, QPoint, QPropertyAnimation, QEasingCurve, QDate
 from PyQt5.QtCore import Qt
 from PyQt5.QtSql import QSqlQuery
@@ -90,6 +92,7 @@ class IncomeScreen(QWidget):
             self.row2.addWidget(box)
 
         self.box1.setVisible(True)
+        self.box1.setFocus()
 
         self.row4 = QHBoxLayout(self)
 
@@ -107,15 +110,22 @@ class IncomeScreen(QWidget):
 
         self.row3 = QHBoxLayout(self)
         self.next = QPushButton("Next", self)
+        self.next_shortcut = QShortcut(QKeySequence("Return"), self)
+        self.next_shortcut.activated.connect(self.next.click)
         button_style1a(self.next)
         self.next.clicked.connect(self.next_button)
         # self.next.move(self.screen_manager.width() - 10, self.screen_manager.height() - 10)
         self.back = QPushButton("Back", self)
+        self.back_shortcut = QShortcut(QKeySequence("Escape"), self)
+        self.back_shortcut.activated.connect(self.back.click)
         button_style1a(self.back)
         self.back.clicked.connect(self.back_button)
         # self.back.move(self.next.pos().x() - self.next.width(), self.next.pos().y())
 
         self.continue_button = QPushButton("Continue", self)
+        self.continue_shortcut = QShortcut(QKeySequence("Return"), self)
+        self.continue_shortcut.activated.connect(self.continue_button.click)
+        self.continue_shortcut.setEnabled(False)
         button_style1a(self.continue_button)
         self.continue_button.clicked.connect(self.cont_button_function)
         self.continue_button.setVisible(False)
@@ -181,15 +191,18 @@ class IncomeScreen(QWidget):
                 self.questions[self.question_number].setVisible(True)
                 self.fade_animation(self.questions[self.question_number])
                 self.text_boxes[self.question_number].setVisible(True)
+                self.text_boxes[self.question_number].setFocus()
                 self.fade_animation(self.text_boxes[self.question_number])
 
             if self.question_number == len(self.questions) - 1:
+                self.next_shortcut.setEnabled(False)
                 self.next.setVisible(False)
                 self.continue_button.setVisible(True)
+                self.continue_shortcut.setEnabled(True)
 
     def back_button(self):
         if self.animation is None or self.animation.state() == QPropertyAnimation.Stopped:
-            if self.question_number > 1:
+            if self.question_number >= 1:
                 self.expenses -= int(self.text_boxes[self.question_number - 1].text().replace(',', ''))
                 self.continue_button.setVisible(False)
                 self.next.setVisible(True)
@@ -206,6 +219,7 @@ class IncomeScreen(QWidget):
                 self.questions[self.question_number].setVisible(True)
                 self.fade_animation(self.questions[self.question_number])
                 self.text_boxes[self.question_number].setVisible(True)
+                self.text_boxes[self.question_number].setFocus()
                 self.fade_animation(self.text_boxes[self.question_number])
             else:
                 self.go_back()
