@@ -24,7 +24,7 @@ class QuestionScreen(QWidget):
             "transportation": 0,
             "loans": 0
         }
-        self.db = DatabaseManager()
+        self.db = DatabaseManager(self.screen_manager)
         self.init_ui()
 
     def init_ui(self):

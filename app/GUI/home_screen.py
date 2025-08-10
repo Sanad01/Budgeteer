@@ -20,8 +20,8 @@ class HomeScreen(QWidget):
 
     def __init__(self, screen_manager):
         super().__init__()
-        self.db = DatabaseManager()
         self.screen_manager = screen_manager
+        self.db = DatabaseManager(screen_manager)
         self.init_json()
         self.tables = []
         self.data = {}

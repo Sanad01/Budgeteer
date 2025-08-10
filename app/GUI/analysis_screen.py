@@ -16,7 +16,7 @@ class AnalysisScreen(QWidget):
     def __init__(self, screen_manager):
         super().__init__()
         self.screen_manager = screen_manager
-        self.db = DatabaseManager()
+        self.db = DatabaseManager(self.screen_manager)
         self.income = None
         self.budget_percent = None
         self.loans_percent = None

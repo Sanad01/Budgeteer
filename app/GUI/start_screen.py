@@ -17,8 +17,8 @@ class StartScreen(QWidget):
 
     def __init__(self, screen_manager):
         super().__init__()
-        self.db = DatabaseManager()
         self.screen_manager = screen_manager
+        self.db = DatabaseManager(self.screen_manager)
         self.name = None
         self.init_ui()
 
