@@ -6,11 +6,12 @@ import json
 
 class DatabaseManager:
 
-    def __init__(self):
+    def __init__(self, screen_manager):
         self.create_connection()
         self.create_answers_table()
         self.create_expense_table()
         self.create_dates_table()
+        self.screen_manager = screen_manager
         # self.print_table_schema()
         self.plan_dict = {}
         self.fetch_plan()
@@ -214,7 +215,22 @@ class DatabaseManager:
         query.prepare("UPDATE totals SET total = total + :amount WHERE name = :name")
         query.bindValue(":amount", amount)
         query.bindValue(":name", plan_name)
-        print(f"this is the amount {amount}")
+
+        if not query.exec_():
+            print("Error updating total:", query.lastError().text())
+            return
+
+        query.prepare("UPDATE totals SET monthly = monthly + :amount WHERE name = :name")
+        query.bindValue(":amount", amount)
+        query.bindValue(":name", plan_name)
+
+        if not query.exec_():
+            print("Error updating total:", query.lastError().text())
+            return
+
+        query.prepare("UPDATE totals SET yearly = yearly + :amount WHERE name = :name")
+        query.bindValue(":amount", amount)
+        query.bindValue(":name", plan_name)
 
         if not query.exec_():
             print("Error updating total:", query.lastError().text())
@@ -292,3 +308,32 @@ class DatabaseManager:
             dates.append(date_str)
 
         return dates
+
+    def reset(self):
+        today = datetime.today()
+
+        if today.day == 1:
+            self.zero_month(self.screen_manager.name)
+
+        if today.month == 1 and today.day == 1:
+            self.zero_year(self.screen_manager.name)
+
+    def zero_month(self, name):
+        query = QSqlQuery()
+
+        query.prepare("UPDATE totals SET monthly = 0 WHERE name = :name")
+        query.bindValue(":name", name)
+
+        if not query.exec_():
+            print("Error zeroing month:", query.lastError().text())
+            return
+
+    def zero_year(self, name):
+        query = QSqlQuery()
+
+        query.prepare("UPDATE totals SET yearly = 0 WHERE name = :name")
+        query.bindValue(":name", name)
+
+        if not query.exec_():
+            print("Error zeroing year:", query.lastError().text())
+            return

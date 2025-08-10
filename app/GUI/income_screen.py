@@ -283,8 +283,6 @@ class IncomeScreen(QWidget):
         text_boxes = [self.box1.text(), self.box2.text(), self.box3.text(), self.box4.text(), self.box5.text(),
                       self.box6.text()]
 
-
-
         # store the values inserted into each text box as integer values into self.categories
         keys = self.category.keys()
         for key, text in zip(keys, text_boxes):
