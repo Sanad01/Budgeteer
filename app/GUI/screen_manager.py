@@ -27,7 +27,7 @@ class ScreenManager(QMainWindow):
         self.question_screen = QuestionScreen(self)
         self.analysis_screen = None
         self.home_screen = None
-        self.db = DatabaseManager()
+        self.db = DatabaseManager(self)
         self.name = None
 
         # place each screen in a QStackedWidget

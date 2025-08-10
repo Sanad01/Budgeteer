@@ -29,7 +29,7 @@ class IncomeScreen(QWidget):
         }
         self.pay_type = None
         self.expenses = 0
-        self.db = DatabaseManager()
+        self.db = DatabaseManager(self.screen_manager)
         self.init_ui()
 
 

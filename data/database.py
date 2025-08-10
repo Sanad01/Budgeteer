@@ -10,6 +10,7 @@ class DatabaseManager:
         self.create_connection()
         self.create_answers_table()
         self.create_expense_table()
+        self.create_totals_table()
         self.create_dates_table()
         self.screen_manager = screen_manager
         # self.print_table_schema()
