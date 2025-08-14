@@ -26,12 +26,13 @@ class HomeScreen(QWidget):
         self.tables = []
         self.data = {}
         self.paycheck_dates = self.db.get_pay_dates(self.screen_manager.name)
+        self.db.calc_avg_spending(self.screen_manager.name)
         self.init_ui()
 
     def init_ui(self):
         main_layout = QHBoxLayout(self)
 
-        self.money_spent = self.db.get_total(self.screen_manager.name)
+        self.money_spent = self.db.get_monthly_total(self.screen_manager.name)
         col1 = self.create_col1()
         print(f"this is the money spent {self.money_spent}")
 
@@ -101,8 +102,7 @@ class HomeScreen(QWidget):
 
         self.add_button = QPushButton("Add Expense", self)
         self.add_button.clicked.connect(self.insert_json_info)
-
-
+        self.add_button.clicked.connect(self.update_col1)
 
         button_style4(self.add_button)
 
@@ -154,11 +154,19 @@ class HomeScreen(QWidget):
         row0 = QVBoxLayout(self)
 
         ##############row1################
-        budget = data.get("budget")
-        balance = budget - self.money_spent
-        spending_money = QLabel(f"Monthly Balance {balance}")
+        self.budget = data.get("budget")
+        self.balance = self.budget - self.money_spent
+        self.spending_money = QLabel(f"Monthly Balance: {self.balance}")
+        self.money_spent_label = QLabel(f"Money spent this month: {self.money_spent}")
+        self.daily_avg, self.monthly_avg = self.db.get_averages(self.screen_manager.name)
+        self.daily_avg_label = QLabel(f"Daily average: {self.daily_avg}")
+        self.monthly_avg_label = QLabel(f"Monthly average: {self.monthly_avg}")
 
-        row0.addWidget(spending_money)
+        row0.addWidget(self.spending_money)
+        row0.addWidget(self.money_spent_label)
+        row0.addWidget(self.daily_avg_label)
+        row0.addWidget(self.monthly_avg_label)
+
         col1.addLayout(row0)
         return col1
 
@@ -275,6 +283,7 @@ class HomeScreen(QWidget):
 
         # insert amount into totals table
         self.db.calc_total(float(amount), self.screen_manager.name)
+        self.db.calc_avg_spending(self.screen_manager.name)
 
         # Initialize current date
         year = str(datetime.today().year)
@@ -416,3 +425,13 @@ class HomeScreen(QWidget):
             print("Error updating json_expenses:", update_query.lastError().text())
 
 
+    def update_col1(self):
+        amount = str(self.amount.text().replace(',', ''))
+        self.balance = self.balance - float(amount)
+        self.spending_money.setText(f"Monthly Balance {self.balance}")
+        self.money_spent = self.money_spent + float(amount)
+
+        self.daily_avg, self.monthly_avg = self.db.get_averages(self.screen_manager.name)
+        self.daily_avg_label.setText(f"Daily average: {self.daily_avg}")
+        self.monthly_avg_label.setText(f"Monthly average: {self.monthly_avg}")
+        self.money_spent_label.setText(f"Money spent this month: {self.money_spent}")

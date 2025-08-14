@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import sys
+
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from PyQt5.QtWidgets import QMessageBox
 import json
@@ -16,6 +17,7 @@ class DatabaseManager:
         # self.print_table_schema()
         self.plan_dict = {}
         self.fetch_plan()
+        self.reset()
         print(self.plan_dict)
 
     def create_connection(self):
@@ -71,7 +73,10 @@ class DatabaseManager:
             name TEXT PRIMARY KEY,
             total REAL DEFAULT 0,
             monthly REAL DEFAULT 0,
-            yearly REAL DEFAULT 0
+            yearly REAL DEFAULT 0,
+            daily_avg REAL DEFAULT 0,
+            monthly_avg REAL DEFAULT 0,
+            yearly_avg REAL DEFAULT 0
         )
     ''')
 
@@ -251,6 +256,20 @@ class DatabaseManager:
 
         return None
 
+    def get_monthly_total(self, plan_name):
+        query = QSqlQuery()
+        query.prepare("SELECT monthly FROM totals WHERE name = :name")
+        query.bindValue(':name', plan_name)
+
+        if not query.exec_():
+            print("Error retrieving total:", query.lastError().text())
+            return None
+
+        if query.next():
+            return query.value(0)  # Index 0 = first column ("total")
+
+        return None
+
     def generate_paycheck_dates(self, last_date_str, interval_type):
         last_date = datetime.strptime(last_date_str, '%Y-%m-%d')
         delta = timedelta(days=7) if interval_type == "Weekly" else timedelta(days=14)
@@ -315,6 +334,9 @@ class DatabaseManager:
 
         if today.day == 1:
             self.zero_month(self.screen_manager.name)
+            # generate new dates at the beginning of each month
+            new_dates = self.get_pay_dates(self.screen_manager.name)
+            self.insert_generated_dates(self.screen_manager.name, new_dates)
 
         if today.month == 1 and today.day == 1:
             self.zero_year(self.screen_manager.name)
@@ -338,3 +360,83 @@ class DatabaseManager:
         if not query.exec_():
             print("Error zeroing year:", query.lastError().text())
             return
+
+    def calc_avg_spending(self, name):
+        today = datetime.today()
+
+        # get how many months user has used app from paycheck_dates table
+        query0 = QSqlQuery()
+        query0.prepare("""
+            SELECT COUNT(DISTINCT strftime('%m', date))
+            FROM paycheck_dates
+            WHERE user_id = :name
+        """)
+        query0.bindValue(":user_id", name)
+
+        if not query0.exec_():
+            print("Error counting months:", query0.lastError().text())
+            return
+
+        if query0.next():
+            months_count = query0.value(0) or 1
+        else:
+            months_count = 1
+
+        # --- Get monthly spending ---
+        query1 = QSqlQuery()
+        query1.prepare("SELECT monthly FROM totals WHERE name = :name")
+        query1.bindValue(":name", name)
+
+        if not query1.exec_() or not query1.next():
+            print("Error getting monthly spending:", query1.lastError().text())
+            return
+
+        monthly_spending = query1.value(0) or 0.0
+        daily_average = round((monthly_spending / today.day), 2)
+
+        # --- Get yearly spending ---
+        query2 = QSqlQuery()
+        query2.prepare("SELECT yearly FROM totals WHERE name = :name")
+        query2.bindValue(":name", name)
+
+        if not query2.exec_() or not query2.next():
+            print("Error getting yearly spending:", query2.lastError().text())
+            return
+
+        yearly_spending = query2.value(0) or 0.0
+        monthly_average = round((yearly_spending / months_count), 2)
+
+        # --- Update ---
+        query3 = QSqlQuery()
+        query3.prepare("""
+                UPDATE totals
+                SET daily_avg = ?, monthly_avg = ?
+                WHERE name = ?
+            """)
+        query3.addBindValue(daily_average)
+        query3.addBindValue(monthly_average)
+        query3.addBindValue(name)
+
+        if not query3.exec_():
+            print("Error updating averages:", query3.lastError().text())
+
+    def get_averages(self, name):
+        query = QSqlQuery()
+
+        query.prepare("""
+            SELECT daily_avg, monthly_avg
+            FROM totals
+            WHERE name = :name
+        """)
+        query.bindValue(":name", name)
+
+        if not query.exec_():
+            print("Error getting averages:", query.lastError().text())
+            return None, None
+
+        if query.next():  # Move to the first row
+            daily_avg = query.value(0) or 0.0
+            monthly_avg = query.value(1) or 0.0
+            return daily_avg, monthly_avg
+        else:
+            return 0.0, 0.0
