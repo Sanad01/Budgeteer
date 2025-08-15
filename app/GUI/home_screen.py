@@ -1,5 +1,6 @@
 import json
 import os.path
+from itertools import count
 from venv import create
 
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -120,7 +121,12 @@ class HomeScreen(QWidget):
 
         table_columns = 3
         table_rows = 10
-        for i in range(31):
+        now = datetime.now()
+        current_year = now.year
+        current_month = now.month
+        days_in_month = calendar.monthrange(current_year, current_month)[1]
+
+        for i in range(1, days_in_month+1):
             table = QTableWidget(table_rows, table_columns, self)
             table.setHorizontalHeaderLabels(["Category", "Amount", "Description"])
             table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -206,14 +212,14 @@ class HomeScreen(QWidget):
         print(f"these are the days in this month {days_in_month}")
 
         self.calendar_boxes = []
-        for i in range(days_in_month):
-            frame = ClickableFrame(self, i+1, self.paycheck_dates)
+        for i in range(1, days_in_month+1):
+            frame = ClickableFrame(self, i, self.paycheck_dates)
             frame.setMaximumSize(90, 90)
             frame.setFrameShape(QFrame.StyledPanel)
             frame.clicked.connect(lambda qframe=frame: self.on_frame_click(qframe))
             frame.clicked.connect(self.show_day_table)
             frame_layout = QHBoxLayout(frame)
-            day_num = QLabel(str(i+1), frame)
+            day_num = QLabel(str(i), frame)
             day_num.setAlignment(Qt.AlignTop)
             frame_layout.addWidget(day_num)
             if i == datetime.today().day:
@@ -221,7 +227,6 @@ class HomeScreen(QWidget):
             self.calendar_boxes.append(frame)
 
         self.create_day_labels()
-
 
         # Get the first day of the month (0 = Monday, 6 = Sunday)
         first_day_of_month = calendar.monthrange(current_year, current_month)[0]
