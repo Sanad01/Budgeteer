@@ -14,7 +14,7 @@ from datetime import datetime
 
 from data.database import DatabaseManager
 from custom_widgets import ClickableFrame
-from app.GUI.fonts import table_style, text_box_style1, combobox_style, button_style4, frame_style
+from app.GUI.fonts import table_style, text_box_style1, combobox_style, button_style4, frame_style, button_style1
 
 
 class HomeScreen(QWidget):
@@ -135,6 +135,7 @@ class HomeScreen(QWidget):
             table.verticalHeader().setVisible(False)
             table_style(table)
             if i != datetime.today().day:
+                print(f"this is i: {i}")
                 table.hide()
             else:
                 self.restore_table_info(table, str(i))  # restore db data as soon as home_screen is open
@@ -157,21 +158,47 @@ class HomeScreen(QWidget):
         data = self.db.get_percentages(self.screen_manager.name)
         col1 = QHBoxLayout(self)
 
-        row0 = QVBoxLayout(self)
-
-        ##############row1################
         self.budget = data.get("budget")
         self.balance = self.budget - self.money_spent
-        self.spending_money = QLabel(f"Monthly Balance: {self.balance}")
+
+        self.spending_money = QLabel(f"Monthly Balance: {self.balance}<span style='color:gold;'>$</span>")
+        self.spending_money.setStyleSheet("""
+            background-color: #4CAF50;  /* nice green */
+            color: white;  /* text color for everything except $ */
+            font-size: 11pt;
+            font-weight: bold;
+            padding: 0.5em;
+            border-radius: 8px;
+        """)
+        self.spending_money.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.spending_money.setMaximumWidth(250)
+
         self.money_spent_label = QLabel(f"Money spent this month: {self.money_spent}")
         self.daily_avg, self.monthly_avg = self.db.get_averages(self.screen_manager.name)
         self.daily_avg_label = QLabel(f"Daily average: {self.daily_avg}")
         self.monthly_avg_label = QLabel(f"Monthly average: {self.monthly_avg}")
 
+        row0 = QVBoxLayout(self)
         row0.addWidget(self.spending_money)
-        row0.addWidget(self.money_spent_label)
-        row0.addWidget(self.daily_avg_label)
-        row0.addWidget(self.monthly_avg_label)
+        row0.addStretch()
+        self.stats_button = QPushButton("📑 Stats")
+        row0.addWidget(self.stats_button)
+        self.analytics_button = QPushButton("📊 Analytics")
+        row0.addWidget(self.analytics_button)
+        self.add_button = QPushButton("💰 Add Income")
+        row0.addWidget(self.add_button)
+        self.breakdown_button = QPushButton("🔍 Spending Breakdown")
+        row0.addWidget(self.breakdown_button)
+        row0.addStretch()
+
+        buttons = [self.stats_button, self.analytics_button, self.add_button, self.breakdown_button]
+        relative_font_size = max(10, self.screen_manager.screen_size[1] // 35)
+        for button in buttons:
+            button_style1(button)
+            button.setMinimumSize(self.screen_manager.screen_size[0] // 5, self.screen_manager.screen_size[1] // 13)
+            font = QFont()
+            font.setPointSize(relative_font_size)
+            button.setFont(font)
 
         col1.addLayout(row0)
         return col1
@@ -223,6 +250,7 @@ class HomeScreen(QWidget):
             day_num.setAlignment(Qt.AlignTop)
             frame_layout.addWidget(day_num)
             if i == datetime.today().day:
+                print(f"this is clicked {i}")
                 frame.click()  # select the frame corresponding to the current daty of the month
             self.calendar_boxes.append(frame)
 
@@ -433,7 +461,7 @@ class HomeScreen(QWidget):
     def update_col1(self):
         amount = str(self.amount.text().replace(',', ''))
         self.balance = self.balance - float(amount)
-        self.spending_money.setText(f"Monthly Balance {self.balance}")
+        self.spending_money.setText(f"Monthly Balance: {self.balance}<span style='color:gold;'>$</span>")
         self.money_spent = self.money_spent + float(amount)
 
         self.daily_avg, self.monthly_avg = self.db.get_averages(self.screen_manager.name)
