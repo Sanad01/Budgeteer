@@ -335,7 +335,8 @@ class DatabaseManager:
         if today.day == 1:
             self.zero_month(self.screen_manager.name)
             # generate new dates at the beginning of each month
-            new_dates = self.get_pay_dates(self.screen_manager.name)
+            last_date = self.get_pay_dates(self.screen_manager.name)
+            new_dates = self.generate_paycheck_dates(last_date[-1], self.get_pay_type(self.screen_manager.name))
             self.insert_generated_dates(self.screen_manager.name, new_dates)
 
         if today.month == 1 and today.day == 1:
@@ -440,3 +441,20 @@ class DatabaseManager:
             return daily_avg, monthly_avg
         else:
             return 0.0, 0.0
+
+    def get_pay_type(self, name):
+        query = QSqlQuery()
+
+        query.prepare("""
+                    SELECT pay_type
+                    FROM answers
+                    WHERE name = :name
+                """)
+        query.bindValue(":name", name)
+
+        if not query.exec_():
+            print("Error getting pay_type:", query.lastError().text())
+            return None, None
+
+        if query.next():  # Move to the first row
+            return query.value(0)
