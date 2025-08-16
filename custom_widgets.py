@@ -11,6 +11,7 @@ class ClickableFrame(QFrame):
         super().__init__(parent)
         self.selected = None
         self.pay_date = None
+        self.day = frame_date
 
         today = datetime.today()
         self.date = frame_date

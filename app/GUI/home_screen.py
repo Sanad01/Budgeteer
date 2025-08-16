@@ -275,7 +275,7 @@ class HomeScreen(QWidget):
         for i, frame in enumerate(self.calendar_boxes):
             if frame.selected:
                 self.tables[i].show()
-                self.restore_table_info(self.tables[i], str(i))
+                self.restore_table_info(self.tables[i], str(frame.day))
 
 
     def adjust_table_height(self, table: QTableWidget):
@@ -323,9 +323,9 @@ class HomeScreen(QWidget):
         month = str(datetime.today().month)
         day = None
 
-        for i, frame in enumerate(self.calendar_boxes):
+        for frame in self.calendar_boxes:
             if frame.selected:
-                day = str(i)
+                day = str(frame.day)  # Use the frame's actual calendar day
                 break
 
         if day is None:
