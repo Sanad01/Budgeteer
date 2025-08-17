@@ -1,3 +1,4 @@
+from calendar import month
 from datetime import datetime, timedelta
 import sys
 
@@ -273,11 +274,11 @@ class DatabaseManager:
         last_date = datetime.strptime(last_date_str, '%Y-%m-%d')
         delta = timedelta(days=7) if interval_type == "Weekly" else timedelta(days=14)
 
-        end_of_month = last_date.replace(day=28) + timedelta(days=4)
-        end_of_month = end_of_month.replace(day=1) - timedelta(days=1)
-
         new_dates = []
         next_date = last_date + delta
+
+        # compute end of *next_date's* month
+        end_of_month = (next_date.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
 
         while next_date <= end_of_month:
             new_dates.append(next_date.strftime('%Y-%m-%d'))
@@ -338,7 +339,10 @@ class DatabaseManager:
     def reset(self, name):
         today = datetime.today()
 
-        if today.day == 1:
+        last_pay_date = self.get_pay_dates(name)
+        last_pay_date = datetime.strptime(last_pay_date[-1], '%Y-%m-%d')
+
+        if today.day == 1 and last_pay_date.month != today.month:
             self.zero_month(name)
             # generate new dates at the beginning of each month
             last_date = self.get_pay_dates(name)

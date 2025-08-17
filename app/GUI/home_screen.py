@@ -26,7 +26,7 @@ class HomeScreen(QWidget):
         self.init_json()
         self.tables = []
         self.data = {}
-        self.paycheck_dates = self.db.get_pay_dates(self.screen_manager.name)
+
         self.db.calc_avg_spending(self.screen_manager.name)
         self.now = datetime.now()
         self.today = self.now.day
@@ -35,6 +35,7 @@ class HomeScreen(QWidget):
         self.days_in_month = calendar.monthrange(self.current_year, self.current_month)[1]
         self.pay_type = self.db.get_pay_type(self.screen_manager.name)
         self.db.reset(self.screen_manager.name)
+        self.paycheck_dates = self.db.get_pay_dates(self.screen_manager.name)
         self.init_ui()
 
     def init_ui(self):
