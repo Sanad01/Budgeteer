@@ -1,19 +1,20 @@
 import json
 import os.path
+from itertools import count
 from venv import create
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QTableWidget, \
-    QDateEdit, QComboBox, QLineEdit, QTableWidgetItem, QSizePolicy
+    QDateEdit, QComboBox, QLineEdit, QTableWidgetItem, QSizePolicy, QDialog
 from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtGui import QFont, QIntValidator
 import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from data.database import DatabaseManager
 from custom_widgets import ClickableFrame
-from app.GUI.fonts import table_style, text_box_style1, combobox_style, button_style4, frame_style
+from app.GUI.fonts import table_style, text_box_style1, combobox_style, button_style4, frame_style, button_style1
 
 
 class HomeScreen(QWidget):
@@ -25,8 +26,16 @@ class HomeScreen(QWidget):
         self.init_json()
         self.tables = []
         self.data = {}
-        self.paycheck_dates = self.db.get_pay_dates(self.screen_manager.name)
+
         self.db.calc_avg_spending(self.screen_manager.name)
+        self.now = datetime.now()
+        self.today = self.now.day
+        self.current_year = self.now.year
+        self.current_month = self.now.month
+        self.days_in_month = calendar.monthrange(self.current_year, self.current_month)[1]
+        self.pay_type = self.db.get_pay_type(self.screen_manager.name)
+        self.db.reset(self.screen_manager.name)
+        self.paycheck_dates = self.db.get_pay_dates(self.screen_manager.name)
         self.init_ui()
 
     def init_ui(self):
@@ -120,7 +129,12 @@ class HomeScreen(QWidget):
 
         table_columns = 3
         table_rows = 10
-        for i in range(31):
+        now = datetime.now()
+        current_year = now.year
+        current_month = now.month
+        days_in_month = calendar.monthrange(current_year, current_month)[1]
+
+        for i in range(1, days_in_month+1):
             table = QTableWidget(table_rows, table_columns, self)
             table.setHorizontalHeaderLabels(["Category", "Amount", "Description"])
             table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -129,6 +143,7 @@ class HomeScreen(QWidget):
             table.verticalHeader().setVisible(False)
             table_style(table)
             if i != datetime.today().day:
+                print(f"this is i: {i}")
                 table.hide()
             else:
                 self.restore_table_info(table, str(i))  # restore db data as soon as home_screen is open
@@ -151,21 +166,52 @@ class HomeScreen(QWidget):
         data = self.db.get_percentages(self.screen_manager.name)
         col1 = QHBoxLayout(self)
 
-        row0 = QVBoxLayout(self)
-
-        ##############row1################
         self.budget = data.get("budget")
         self.balance = self.budget - self.money_spent
-        self.spending_money = QLabel(f"Monthly Balance: {self.balance}")
+
+        self.spending_money = QLabel(f"Monthly Balance: {self.balance}<span style='color:gold;'>$</span>")
+        self.spending_money.setStyleSheet("""
+            background-color: #4CAF50;  /* nice green */
+            color: white;  /* text color for everything except $ */
+            font-size: 11pt;
+            font-weight: bold;
+            padding: 0.5em;
+            border-radius: 8px;
+        """)
+        self.spending_money.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.spending_money.setMaximumWidth(250)
+
         self.money_spent_label = QLabel(f"Money spent this month: {self.money_spent}")
         self.daily_avg, self.monthly_avg = self.db.get_averages(self.screen_manager.name)
         self.daily_avg_label = QLabel(f"Daily average: {self.daily_avg}")
         self.monthly_avg_label = QLabel(f"Monthly average: {self.monthly_avg}")
 
+        row0 = QVBoxLayout(self)
         row0.addWidget(self.spending_money)
-        row0.addWidget(self.money_spent_label)
-        row0.addWidget(self.daily_avg_label)
-        row0.addWidget(self.monthly_avg_label)
+        row0.addStretch()
+        self.stats_button = QPushButton("📑 Stats")
+        self.stats_button.clicked.connect(self.show_stats_popup)
+        row0.addWidget(self.stats_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
+        self.analytics_button = QPushButton("📊 Analytics")
+        row0.addWidget(self.analytics_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
+        self.add_button = QPushButton("💰 Add Income")
+        row0.addWidget(self.add_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
+        self.breakdown_button = QPushButton("🔍 Spending Breakdown")
+        row0.addWidget(self.breakdown_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
+        row0.addStretch()
+
+        buttons = [self.stats_button, self.analytics_button, self.add_button, self.breakdown_button]
+        relative_font_size = max(10, self.screen_manager.screen_size[1] // 35)
+        for button in buttons:
+            button_style1(button)
+            button.setMinimumSize(self.screen_manager.screen_size[0] // 5, self.screen_manager.screen_size[1] // 13)
+            font = QFont()
+            font.setPointSize(relative_font_size)
+            button.setFont(font)
 
         col1.addLayout(row0)
         return col1
@@ -199,32 +245,26 @@ class HomeScreen(QWidget):
 
 
     def create_calendar(self):
-        now = datetime.now()
-        current_year = now.year
-        current_month = now.month
-        days_in_month = calendar.monthrange(current_year, current_month)[1]
-        print(f"these are the days in this month {days_in_month}")
-
         self.calendar_boxes = []
-        for i in range(days_in_month):
-            frame = ClickableFrame(self, i+1, self.paycheck_dates)
+        for i in range(1, self.days_in_month+1):
+            frame = ClickableFrame(self, i, self.paycheck_dates)
             frame.setMaximumSize(90, 90)
             frame.setFrameShape(QFrame.StyledPanel)
             frame.clicked.connect(lambda qframe=frame: self.on_frame_click(qframe))
             frame.clicked.connect(self.show_day_table)
             frame_layout = QHBoxLayout(frame)
-            day_num = QLabel(str(i+1), frame)
+            day_num = QLabel(str(i), frame)
             day_num.setAlignment(Qt.AlignTop)
             frame_layout.addWidget(day_num)
             if i == datetime.today().day:
+                print(f"this is clicked {i}")
                 frame.click()  # select the frame corresponding to the current daty of the month
             self.calendar_boxes.append(frame)
 
         self.create_day_labels()
 
-
         # Get the first day of the month (0 = Monday, 6 = Sunday)
-        first_day_of_month = calendar.monthrange(current_year, current_month)[0]
+        first_day_of_month = calendar.monthrange(self.current_year, self.current_month)[0]
 
         day_counter = 0
 
@@ -232,7 +272,7 @@ class HomeScreen(QWidget):
             for col in range(7):
                 if row == 1 and col < first_day_of_month:
                     continue  # Skip the cells before the first day of the month
-                if day_counter < days_in_month:
+                if day_counter < self.days_in_month:
                     self.grid.addWidget(self.calendar_boxes[day_counter], row, col)
                     day_counter += 1
 
@@ -242,7 +282,7 @@ class HomeScreen(QWidget):
         for i, frame in enumerate(self.calendar_boxes):
             if frame.selected:
                 self.tables[i].show()
-                self.restore_table_info(self.tables[i], str(i))
+                self.restore_table_info(self.tables[i], str(frame.day))
 
 
     def adjust_table_height(self, table: QTableWidget):
@@ -290,9 +330,9 @@ class HomeScreen(QWidget):
         month = str(datetime.today().month)
         day = None
 
-        for i, frame in enumerate(self.calendar_boxes):
+        for frame in self.calendar_boxes:
             if frame.selected:
-                day = str(i)
+                day = str(frame.day)  # Use the frame's actual calendar day
                 break
 
         if day is None:
@@ -428,10 +468,107 @@ class HomeScreen(QWidget):
     def update_col1(self):
         amount = str(self.amount.text().replace(',', ''))
         self.balance = self.balance - float(amount)
-        self.spending_money.setText(f"Monthly Balance {self.balance}")
+        self.spending_money.setText(f"Monthly Balance: {self.balance}<span style='color:gold;'>$</span>")
         self.money_spent = self.money_spent + float(amount)
 
         self.daily_avg, self.monthly_avg = self.db.get_averages(self.screen_manager.name)
         self.daily_avg_label.setText(f"Daily average: {self.daily_avg}")
         self.monthly_avg_label.setText(f"Monthly average: {self.monthly_avg}")
         self.money_spent_label.setText(f"Money spent this month: {self.money_spent}")
+
+    def show_stats_popup(self):
+        dialog = QDialog(self)
+        dialog.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)  # remove top bar
+        dialog.setAttribute(Qt.WA_TranslucentBackground)  # allow rounded corners if styled
+        dialog.setModal(True)
+        dialog.setMinimumSize(320, 250)
+
+        # Main container with white background + rounded corners + drop shadow feel
+        container = QFrame(dialog)
+        container.setStyleSheet("""
+            QFrame {
+                background-color: white;
+                border-radius: 12px;
+                border: 2px solid black;
+            }
+        """)
+
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(10)
+
+        # Helper function to create styled labels
+        def stat_label(text):
+            label = QLabel(text)
+            label.setStyleSheet("""
+                QLabel {
+                    color: black;
+                    font-size: 12pt;
+                }
+            """)
+            label.setAlignment(Qt.AlignLeft)
+            return label
+
+        def next_paycheck():
+            now = datetime.now().date()
+            for date in self.paycheck_dates:
+                date_obj = datetime.strptime(date, "%Y-%m-%d").date()
+                if now < date_obj:
+                    delta = (date_obj - now).days  # number of days
+                    return delta
+
+            # if paycheck is next month
+            date_obj2 = datetime.strptime(self.paycheck_dates[-1], "%Y-%m-%d").date()
+            if self.pay_type == "Weekly":
+                date_obj2 += timedelta(weeks=1)
+            else:
+                date_obj2 += timedelta(weeks=2)
+
+            next_paycheck = (date_obj2 - now).days
+            return next_paycheck
+
+        # Stats
+        layout.addWidget(stat_label(f"Monthly Budget: {self.budget} $"))
+        layout.addWidget(self._separator_line())
+        layout.addWidget(stat_label(f"Money spent this month: {self.money_spent} $"))
+        layout.addWidget(self._separator_line())
+        layout.addWidget(stat_label(f"Monthly Balance: {self.balance} $"))
+        layout.addWidget(self._separator_line())
+        layout.addWidget(stat_label(f"Daily average: {self.daily_avg} $"))
+        layout.addWidget(self._separator_line())
+        layout.addWidget(stat_label(f"Monthly average: {self.monthly_avg} $"))
+        layout.addWidget(self._separator_line())
+        layout.addWidget(stat_label(f"Next paycheck: {next_paycheck()} days"))
+        layout.addWidget(self._separator_line())
+        layout.addWidget(stat_label(f"Days left in month: {self.days_in_month - self.today} days"))
+        layout.addWidget(self._separator_line())
+
+        # Close button at bottom
+        close_btn = QPushButton("Close")
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 8px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        close_btn.clicked.connect(dialog.close)
+        layout.addWidget(close_btn, alignment=Qt.AlignCenter)
+
+        # Final layout
+        wrapper = QVBoxLayout(dialog)
+        wrapper.addWidget(container)
+
+        dialog.exec_()
+
+    def _separator_line(self):
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        line.setStyleSheet("color: #ddd;")
+        return line

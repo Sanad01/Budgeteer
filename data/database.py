@@ -1,3 +1,4 @@
+from calendar import month
 from datetime import datetime, timedelta
 import sys
 
@@ -13,11 +14,10 @@ class DatabaseManager:
         self.create_expense_table()
         self.create_totals_table()
         self.create_dates_table()
-        self.screen_manager = screen_manager
         # self.print_table_schema()
         self.plan_dict = {}
         self.fetch_plan()
-        self.reset()
+        self.screen_manager = screen_manager
         print(self.plan_dict)
 
     def create_connection(self):
@@ -274,11 +274,11 @@ class DatabaseManager:
         last_date = datetime.strptime(last_date_str, '%Y-%m-%d')
         delta = timedelta(days=7) if interval_type == "Weekly" else timedelta(days=14)
 
-        end_of_month = last_date.replace(day=28) + timedelta(days=4)
-        end_of_month = end_of_month.replace(day=1) - timedelta(days=1)
-
         new_dates = []
         next_date = last_date + delta
+
+        # compute end of *next_date's* month
+        end_of_month = (next_date.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
 
         while next_date <= end_of_month:
             new_dates.append(next_date.strftime('%Y-%m-%d'))
@@ -310,13 +310,20 @@ class DatabaseManager:
 
         year_month = f"{year}-{month:02d}"
 
+        if now.month == 1:
+            last_year_month = f"{now.year - 1}-12"
+        else:
+            last_year_month = f"{now.year}-{now.month - 1:02d}"
+
+        # Prepare query to get dates from this month or last month
         query.prepare('''
-                SELECT date FROM paycheck_dates
-                WHERE user_id = :user_id
-                AND date LIKE :year_month || '%'
-            ''')
+            SELECT date FROM paycheck_dates
+            WHERE user_id = :user_id
+            AND (date LIKE :year_month || '%' OR date LIKE :last_year_month || '%')
+        ''')
         query.bindValue(':user_id', user_id)
         query.bindValue(':year_month', year_month)
+        query.bindValue(':last_year_month', last_year_month)
 
         if not query.exec_():
             print("Query failed:", query.lastError().text())
@@ -329,17 +336,23 @@ class DatabaseManager:
 
         return dates
 
-    def reset(self):
+    def reset(self, name):
         today = datetime.today()
 
-        if today.day == 1:
-            self.zero_month(self.screen_manager.name)
+        last_pay_date = self.get_pay_dates(name)
+        last_pay_date = datetime.strptime(last_pay_date[-1], '%Y-%m-%d')
+
+        if today.day == 1 and last_pay_date.month != today.month:
+            self.zero_month(name)
             # generate new dates at the beginning of each month
-            new_dates = self.get_pay_dates(self.screen_manager.name)
-            self.insert_generated_dates(self.screen_manager.name, new_dates)
+            last_date = self.get_pay_dates(name)
+            print(f"this is the last date {last_date[-1]}")
+            new_dates = self.generate_paycheck_dates(last_date[-1], self.get_pay_type(name))
+            print(f"these are the dates {new_dates}")
+            self.insert_generated_dates(name, new_dates)
 
         if today.month == 1 and today.day == 1:
-            self.zero_year(self.screen_manager.name)
+            self.zero_year(name)
 
     def zero_month(self, name):
         query = QSqlQuery()
@@ -440,3 +453,20 @@ class DatabaseManager:
             return daily_avg, monthly_avg
         else:
             return 0.0, 0.0
+
+    def get_pay_type(self, name):
+        query = QSqlQuery()
+
+        query.prepare("""
+                    SELECT pay_type
+                    FROM answers
+                    WHERE name = :name
+                """)
+        query.bindValue(":name", name)
+
+        if not query.exec_():
+            print("Error getting pay_type:", query.lastError().text())
+            return None, None
+
+        if query.next():  # Move to the first row
+            return query.value(0)
