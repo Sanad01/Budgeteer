@@ -192,12 +192,16 @@ class HomeScreen(QWidget):
         self.stats_button = QPushButton("📑 Stats")
         self.stats_button.clicked.connect(self.show_stats_popup)
         row0.addWidget(self.stats_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         self.analytics_button = QPushButton("📊 Analytics")
         row0.addWidget(self.analytics_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         self.add_button = QPushButton("💰 Add Income")
         row0.addWidget(self.add_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         self.breakdown_button = QPushButton("🔍 Spending Breakdown")
         row0.addWidget(self.breakdown_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         row0.addStretch()
 
         buttons = [self.stats_button, self.analytics_button, self.add_button, self.breakdown_button]
@@ -534,9 +538,9 @@ class HomeScreen(QWidget):
         layout.addWidget(self._separator_line())
         layout.addWidget(stat_label(f"Monthly average: {self.monthly_avg} $"))
         layout.addWidget(self._separator_line())
-        layout.addWidget(stat_label(f"Next paycheck: {next_paycheck()}"))
+        layout.addWidget(stat_label(f"Next paycheck: {next_paycheck()} days"))
         layout.addWidget(self._separator_line())
-        layout.addWidget(stat_label(f"Days left in month: {self.days_in_month - self.today}"))
+        layout.addWidget(stat_label(f"Days left in month: {self.days_in_month - self.today} days"))
         layout.addWidget(self._separator_line())
 
         # Close button at bottom
