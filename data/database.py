@@ -29,6 +29,10 @@ class DatabaseManager:
         else:
             print("Database connected successfully.")
 
+    def get_connection(self):
+        """Return the underlying QSqlDatabase object."""
+        return self.db
+
     def create_answers_table(self):
         query = QSqlQuery()
 
