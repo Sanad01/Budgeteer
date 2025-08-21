@@ -3,18 +3,20 @@ import os.path
 from itertools import count
 from venv import create
 
+from PyQt5 import QtChart
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QTableWidget, \
     QDateEdit, QComboBox, QLineEdit, QTableWidgetItem, QSizePolicy, QDialog
 from PyQt5.QtWidgets import QHeaderView
-from PyQt5.QtGui import QFont, QIntValidator
+from PyQt5.QtGui import QFont, QIntValidator, QColor
 import calendar
 from datetime import datetime, timedelta
 
 from data.database import DatabaseManager
 from custom_widgets import ClickableFrame
-from app.GUI.fonts import table_style, text_box_style1, combobox_style, button_style4, frame_style, button_style1
+from app.GUI.fonts import table_style, text_box_style1, combobox_style, button_style4, frame_style, button_style1, \
+    text_font
 
 
 class HomeScreen(QWidget):
@@ -44,12 +46,11 @@ class HomeScreen(QWidget):
 
         self.money_spent = self.db.get_monthly_total(self.screen_manager.name)
         col1 = self.create_col1()
-        print(f"this is the money spent {self.money_spent}")
-
         col2 = self.create_col2()
-
+        col3 = self.create_col3()
         main_layout.addLayout(col1)
         main_layout.addStretch()
+        main_layout.addLayout(col3)
         main_layout.addLayout(col2)
 
 
@@ -74,7 +75,6 @@ class HomeScreen(QWidget):
         outer_frame.setLayout(calendar_frame_layout)
 
         row1 = QHBoxLayout(self)
-        row1.addStretch()
         #row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
         row1.addWidget(outer_frame, alignment=Qt.AlignRight)
         #row1.addSpacing(int(self.screen_manager.screen_size[0]//3))  # Add stretchable space
@@ -107,11 +107,11 @@ class HomeScreen(QWidget):
 
         # third row
         row3 = QHBoxLayout(self)
-        row3.addStretch()
         row3.addSpacing(int(self.screen_manager.screen_size[0]//5 - 15))
 
         self.add_button = QPushButton("Add Expense", self)
         self.add_button.clicked.connect(self.insert_json_info)
+        self.add_button.clicked.connect(self.update_chart)
         self.add_button.clicked.connect(self.update_col1)
 
         button_style4(self.add_button)
@@ -191,17 +191,21 @@ class HomeScreen(QWidget):
         row0.addWidget(self.spending_money)
         row0.addStretch()
         self.stats_button = QPushButton("📑 Stats")
+        self.stats_button.clicked.connect(self.hide_chart)
         self.stats_button.clicked.connect(self.show_stats_popup)
         row0.addWidget(self.stats_button)
         row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         self.analytics_button = QPushButton("📊 Analytics")
         self.analytics_button.clicked.connect(self.emit_graph_signal)
+        self.analytics_button.clicked.connect(self.hide_chart)
         row0.addWidget(self.analytics_button)
         row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         self.add_button = QPushButton("💰 Add Income")
+        self.add_button.clicked.connect(self.hide_chart)
         row0.addWidget(self.add_button)
         row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         self.breakdown_button = QPushButton("🔍 Spending Breakdown")
+        self.breakdown_button.clicked.connect(self.show_chart)
         row0.addWidget(self.breakdown_button)
         row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         row0.addStretch()
@@ -217,6 +221,13 @@ class HomeScreen(QWidget):
 
         col1.addLayout(row0)
         return col1
+
+    def create_col3(self):
+        col3 = QVBoxLayout(self)
+        col3.addStretch()
+        col3.addWidget(self.create_chart())
+        col3.addStretch()
+        return col3
 
     def get_money_spent(self):
         money_spent = 0
@@ -577,3 +588,139 @@ class HomeScreen(QWidget):
 
     def emit_graph_signal(self):
         self.contToGraph.emit()
+
+    def create_chart(self):
+        self.chart = QtChart.QChart()
+        self.series = QtChart.QPieSeries(self.chart)
+        self.chart_view = QtChart.QChartView(self.chart, self)
+
+        # --- Fetch JSON ---
+        json_data = self.fetch_json_from_db()
+        if not json_data:
+            return None  # no data
+
+        # --- Parse current month totals ---
+        category_totals = self.parse_category_totals_current_month(json_data)
+
+        if category_totals:
+            colors = [
+                QColor(194, 136, 70),
+                QColor(63, 159, 159),
+                QColor(220, 177, 45),
+                QColor(136, 113, 160),
+                QColor(100, 180, 100),
+                QColor(180, 100, 120),
+            ]
+
+            for i, (category, total) in enumerate(category_totals.items()):
+                slice = QtChart.QPieSlice(f"{category} ({total})", total)
+                slice.setColor(colors[i % len(colors)])
+                slice.setBorderWidth(2)
+                slice.setLabelFont(text_font(slice.labelFont()))
+
+                # click/animation
+                slice.pressed.connect(lambda sl=slice: self.explode_slice(sl))
+                slice.released.connect(lambda sl=slice: self.restored_sliced(sl))
+
+                self.series.append(slice)
+
+            self.chart.addSeries(self.series)
+            self.chart.setBackgroundVisible(False)
+
+            self.chart.legend().setFont(text_font(self.chart.legend()))
+            self.chart.legend().setBackgroundVisible(False)
+            self.chart.legend().setBorderColor(QColor(0, 0, 0))
+            self.chart.legend().setAlignment(Qt.AlignBottom)
+
+            self.chart_view.setMinimumSize(self.screen_manager.screen_size[0] // 4, self.screen_manager.screen_size[1] // 4)
+            self.chart_view.setVisible(False)
+
+            return self.chart_view
+
+        return None
+
+    def explode_slice(self, slice):
+        slice.setExploded(True)
+        slice.setExplodeDistanceFactor(0.1)
+        slice.setLabelVisible(True)
+
+    def restored_sliced(self, slice):
+        slice.setExploded(False)
+        slice.setLabelVisible(False)
+
+    def parse_category_totals_current_month(self, data):
+        """Aggregate spending by category for the current month only."""
+        now = datetime.now()
+        current_year = str(now.year)
+        current_month = str(now.month)  # JSON keys are strings
+
+        totals = {}
+
+        # Only look at the current year and month
+        if current_year in data and current_month in data[current_year]:
+            for day, entries in data[current_year][current_month].items():
+                # entries = [Category, Amount, Note, Category, Amount, Note, ...]
+                for i in range(0, len(entries), 3):
+                    try:
+                        category = entries[i]
+                        amount = float(entries[i + 1])
+                    except (IndexError, ValueError):
+                        continue
+
+                    totals[category] = totals.get(category, 0) + amount
+
+        return totals
+
+    def fetch_json_from_db(self):
+        query = QSqlQuery(self.db.db)  # use your QSqlDatabase connection
+        query.prepare("SELECT json_expenses FROM answers WHERE name = :user_id")
+        query.bindValue(":user_id", self.screen_manager.name)
+
+        if not query.exec_():
+            print("Query failed:", query.lastError().text())
+            return None
+
+        if query.next():
+            json_text = query.value(0)
+            if json_text:
+                import json
+                return json.loads(json_text)
+
+        return None
+
+    def show_chart(self):
+        self.chart_view.setVisible(True)
+
+    def hide_chart(self):
+        self.chart_view.setVisible(False)
+
+    def update_chart(self):
+        """Re-fetch data and update the pie chart dynamically."""
+        self.series.clear()  # remove old slices
+
+        json_data = self.fetch_json_from_db()
+        if not json_data:
+            return
+
+        category_totals = self.parse_category_totals_current_month(json_data)
+
+        colors = [
+            QColor(194, 136, 70),
+            QColor(63, 159, 159),
+            QColor(220, 177, 45),
+            QColor(136, 113, 160),
+            QColor(100, 180, 100),
+            QColor(180, 100, 120),
+        ]
+
+        for i, (category, total) in enumerate(category_totals.items()):
+            slice = QtChart.QPieSlice(f"{category} ({total})", total)
+            slice.setColor(colors[i % len(colors)])
+            slice.setBorderWidth(2)
+            slice.setLabelFont(text_font(slice.labelFont()))
+
+            # click/animation
+            slice.pressed.connect(lambda sl=slice: self.explode_slice(sl))
+            slice.released.connect(lambda sl=slice: self.restored_sliced(sl))
+
+            self.series.append(slice)
