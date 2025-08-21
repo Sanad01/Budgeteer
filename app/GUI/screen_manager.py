@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QMa
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import QPropertyAnimation, Qt, QAbstractAnimation, pyqtSignal
 from PyQt5 import QtWidgets
+
+from app.GUI.graph import GraphScreen
 from data.database import DatabaseManager
 from PyQt5.uic import loadUi
 
@@ -26,6 +28,7 @@ class ScreenManager(QMainWindow):
         self.income_screen = None
         self.question_screen = QuestionScreen(self)
         self.analysis_screen = None
+        self.graph_screen = None
         self.home_screen = None
         self.db = DatabaseManager(self)
         self.name = None
@@ -69,10 +72,19 @@ class ScreenManager(QMainWindow):
             self.home_screen = HomeScreen(self)
 
         self.widget.addWidget(self.home_screen)
+        self.home_screen.contToGraph.connect(self.go_to_graph_screen)
         self.widget.setCurrentWidget(self.home_screen)
 
     def go_to_start_screen(self):
         self.widget.setCurrentWidget(self.start_screen)
+
+    def go_to_graph_screen(self):
+        if self.graph_screen is None:
+            self.graph_screen = GraphScreen(self, self.name)
+
+        self.widget.addWidget(self.graph_screen)
+        self.graph_screen.update_graph()  # always reload fresh
+        self.widget.setCurrentWidget(self.graph_screen)
 
     def get_selected_name(self, selected_name):
         self.name = selected_name

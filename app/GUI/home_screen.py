@@ -18,6 +18,7 @@ from app.GUI.fonts import table_style, text_box_style1, combobox_style, button_s
 
 
 class HomeScreen(QWidget):
+    contToGraph = pyqtSignal()
 
     def __init__(self, screen_manager):
         super().__init__()
@@ -194,6 +195,7 @@ class HomeScreen(QWidget):
         row0.addWidget(self.stats_button)
         row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         self.analytics_button = QPushButton("📊 Analytics")
+        self.analytics_button.clicked.connect(self.emit_graph_signal)
         row0.addWidget(self.analytics_button)
         row0.addSpacing(self.screen_manager.screen_size[0] // 30)
         self.add_button = QPushButton("💰 Add Income")
@@ -572,3 +574,6 @@ class HomeScreen(QWidget):
         line.setFrameShadow(QFrame.Sunken)
         line.setStyleSheet("color: #ddd;")
         return line
+
+    def emit_graph_signal(self):
+        self.contToGraph.emit()
