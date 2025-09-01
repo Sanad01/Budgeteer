@@ -13,11 +13,10 @@ class DatabaseManager:
         self.create_expense_table()
         self.create_totals_table()
         self.create_dates_table()
-        self.screen_manager = screen_manager
         # self.print_table_schema()
         self.plan_dict = {}
         self.fetch_plan()
-        self.reset()
+        self.screen_manager = screen_manager
         print(self.plan_dict)
 
     def create_connection(self):
@@ -310,13 +309,20 @@ class DatabaseManager:
 
         year_month = f"{year}-{month:02d}"
 
+        if now.month == 1:
+            last_year_month = f"{now.year - 1}-12"
+        else:
+            last_year_month = f"{now.year}-{now.month - 1:02d}"
+
+        # Prepare query to get dates from this month or last month
         query.prepare('''
-                SELECT date FROM paycheck_dates
-                WHERE user_id = :user_id
-                AND date LIKE :year_month || '%'
-            ''')
+            SELECT date FROM paycheck_dates
+            WHERE user_id = :user_id
+            AND (date LIKE :year_month || '%' OR date LIKE :last_year_month || '%')
+        ''')
         query.bindValue(':user_id', user_id)
         query.bindValue(':year_month', year_month)
+        query.bindValue(':last_year_month', last_year_month)
 
         if not query.exec_():
             print("Query failed:", query.lastError().text())
@@ -329,18 +335,20 @@ class DatabaseManager:
 
         return dates
 
-    def reset(self):
+    def reset(self, name):
         today = datetime.today()
 
         if today.day == 1:
-            self.zero_month(self.screen_manager.name)
+            self.zero_month(name)
             # generate new dates at the beginning of each month
-            last_date = self.get_pay_dates(self.screen_manager.name)
-            new_dates = self.generate_paycheck_dates(last_date[-1], self.get_pay_type(self.screen_manager.name))
-            self.insert_generated_dates(self.screen_manager.name, new_dates)
+            last_date = self.get_pay_dates(name)
+            print(f"this is the last date {last_date[-1]}")
+            new_dates = self.generate_paycheck_dates(last_date[-1], self.get_pay_type(name))
+            print(f"these are the dates {new_dates}")
+            self.insert_generated_dates(name, new_dates)
 
         if today.month == 1 and today.day == 1:
-            self.zero_year(self.screen_manager.name)
+            self.zero_year(name)
 
     def zero_month(self, name):
         query = QSqlQuery()
