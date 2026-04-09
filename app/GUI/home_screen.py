@@ -1,5 +1,6 @@
 import json
 import os.path
+import sys
 from itertools import count
 from venv import create
 
@@ -39,18 +40,23 @@ class HomeScreen(QWidget):
         self.pay_type = self.db.get_pay_type(self.screen_manager.name)
         self.db.reset(self.screen_manager.name)
         self.paycheck_dates = self.db.get_pay_dates(self.screen_manager.name)
+        self.chart = self.create_chart()
         self.init_ui()
 
     def init_ui(self):
         main_layout = QHBoxLayout(self)
-
+        w = self.screen_manager.screen_size[0] // 4
+        h = self.screen_manager.screen_size[1] // 4
+        x = (self.screen_manager.screen_size[0] - w) // 2
+        y = (self.screen_manager.screen_size[1] - h) // 2
+        self.chart_view.setGeometry(x, y, w, h)
         self.money_spent = self.db.get_monthly_total(self.screen_manager.name)
         col1 = self.create_col1()
         col2 = self.create_col2()
-        col3 = self.create_col3()
+        # col3 = self.create_col3()
         main_layout.addLayout(col1)
         main_layout.addStretch()
-        main_layout.addLayout(col3)
+        # main_layout.addLayout(col3)
         main_layout.addLayout(col2)
 
 
@@ -208,9 +214,13 @@ class HomeScreen(QWidget):
         self.breakdown_button.clicked.connect(self.show_chart)
         row0.addWidget(self.breakdown_button)
         row0.addSpacing(self.screen_manager.screen_size[0] // 30)
+        self.exit_button = QPushButton("🚪 Exit")
+        row0.addWidget(self.exit_button)
+        row0.addSpacing(self.screen_manager.screen_size[0] // 30)
+        self.exit_button.clicked.connect(sys.exit)
         row0.addStretch()
 
-        buttons = [self.stats_button, self.analytics_button, self.add_button, self.breakdown_button]
+        buttons = [self.stats_button, self.analytics_button, self.add_button, self.breakdown_button, self.exit_button]
         relative_font_size = max(10, self.screen_manager.screen_size[1] // 35)
         for button in buttons:
             button_style1(button)

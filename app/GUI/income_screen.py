@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QCheckBox, QSizePolicy, QGraphicsOpacityEffect, QRadioButton, QButtonGroup, \
     QDateEdit
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QFont
 from PyQt5.QtWidgets import QShortcut
 from PyQt5.QtCore import pyqtSignal, QObject, QPoint, QPropertyAnimation, QEasingCurve, QDate
 from PyQt5.QtCore import Qt
@@ -48,6 +48,12 @@ class IncomeScreen(QWidget):
         question7 = QLabel("When was your last paycheck?", self)
 
         self.questions = [question1, question2, question3, question4, question5, question6, question7]
+        for question in self.questions:
+            font = QFont()
+            font.setPointSize(self.screen_manager.screen_size[1] // 35)  # bigger text
+            font.setBold(True)
+            question.setFont(font)
+
         self.question_number = 0
 
         self.box1 = QLineEdit(self)

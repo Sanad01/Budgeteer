@@ -48,11 +48,12 @@ class ScreenManager(QMainWindow):
     def go_to_income_screen(self):
         if self.income_screen is None:
             self.income_screen = IncomeScreen(self)
+            self.widget.addWidget(self.income_screen)
+            self.income_screen.contToAnalysis.connect(self.go_to_analysis)
+            self.income_screen.goBack.connect(self.go_to_start_screen)
 
-        self.widget.addWidget(self.income_screen)
-        self.income_screen.contToAnalysis.connect(self.go_to_analysis)
         self.widget.setCurrentWidget(self.income_screen)
-        self.income_screen.goBack.connect(self.go_to_start_screen)
+
 
     def go_to_questions(self):
         self.widget.setCurrentWidget(self.question_screen)
@@ -61,18 +62,18 @@ class ScreenManager(QMainWindow):
         # makes sure to init only after the table is updated
         if self.analysis_screen is None:
             self.analysis_screen = AnalysisScreen(self)
+            self.widget.addWidget(self.analysis_screen)
+            self.analysis_screen.goToHomeScreen.connect(self.go_to_home_screen)
 
-        self.widget.addWidget(self.analysis_screen)
-        self.analysis_screen.goToHomeScreen.connect(self.go_to_home_screen)
         self.widget.setCurrentWidget(self.analysis_screen)
 
     def go_to_home_screen(self):
         # makes sure to init only after the table is updated
         if self.home_screen is None:
             self.home_screen = HomeScreen(self)
+            self.widget.addWidget(self.home_screen)
+            self.home_screen.contToGraph.connect(self.go_to_graph_screen)
 
-        self.widget.addWidget(self.home_screen)
-        self.home_screen.contToGraph.connect(self.go_to_graph_screen)
         self.widget.setCurrentWidget(self.home_screen)
 
     def go_to_start_screen(self):
@@ -81,8 +82,9 @@ class ScreenManager(QMainWindow):
     def go_to_graph_screen(self):
         if self.graph_screen is None:
             self.graph_screen = GraphScreen(self, self.name)
+            self.widget.addWidget(self.graph_screen)
+            self.graph_screen.BackToHome.connect(self.go_to_home_screen)
 
-        self.widget.addWidget(self.graph_screen)
         self.graph_screen.update_graph()  # always reload fresh
         self.widget.setCurrentWidget(self.graph_screen)
 

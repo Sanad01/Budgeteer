@@ -1,11 +1,13 @@
 from datetime import datetime, date
 import json
 import matplotlib.dates as mdates
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtSql import QSqlQuery
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QPushButton
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
+from app.GUI.fonts import button_style1a
 
 
 class GraphScreen(QWidget):
@@ -17,6 +19,12 @@ class GraphScreen(QWidget):
         self.user_id = user_id
 
         layout = QVBoxLayout(self)
+
+        # Back button
+        self.back_button = QPushButton("⬅ Back to Home")
+        button_style1a(self.back_button)
+        self.back_button.clicked.connect(self.BackToHome.emit)  # emit signal when pressed
+        layout.addWidget(self.back_button, alignment=Qt.AlignLeft)
 
         # Matplotlib Figure
         self.figure = Figure()
@@ -35,6 +43,7 @@ class GraphScreen(QWidget):
 
         # Clear previous plot
         self.figure.clear()
+        self.figure.set_facecolor("#D8CAB8")
         ax = self.figure.add_subplot(111)
 
         # Plot spending trend
